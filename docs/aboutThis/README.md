@@ -44,11 +44,18 @@ The key's randomart image is:
 
 3. 测试连接
 
-我这里好像出现了问题，后面遇到问题在解决吧
+`ssh -T git@github.com`,我这里好像出现了问题，后面遇到问题在解决吧
+
+需要注意，如果是首次配置了 SSH 公私钥后，会在第一次 git 操作时，出现如下问题，这是一定要选 yes!!!
 
 ```bash
-C:\Users\Mrnianj>ssh -T git@github.com
-   Hi mocc124! You've successfully authenticated, but GitHub does not provide shell access.
+Mrnianj@DESKTOP-9F9F6NH MINGW64 /d/博客
+$ git clone git@github.com:mocc124/docs.git
+Cloning into 'docs'...
+The authenticity of host 'github.com (127.0.0.1)' can't be established.
+ED25519 key fingerprint is SHA256:+SvZiMJhD3wvvCOszPA0UvHdDkr4V6TF/bzLiYuJpqU.
+This key is not known by any other names
+Are you sure you want to continue connecting (yes/no/[fingerprint])?
 ```
 
 ## 二、创建工程文件
@@ -57,7 +64,7 @@ C:\Users\Mrnianj>ssh -T git@github.com
 [VuePress 快速上手](https://vuepress.vuejs.org/zh/guide/getting-started.html)
 
 注意点 1：已经不推荐全局安装 VuePress，
-注意点 2：在快速上手中，官方推荐我们添加如下 script：
+注意点 2：在快速上手中，官方推荐我们添加如下 scripts：
 
 ```js
 {
@@ -68,7 +75,7 @@ C:\Users\Mrnianj>ssh -T git@github.com
 }
 ```
 
-但是上面的有一定的问题：不能热更新，推荐修改后配置如下。
+但是上面的有一定的问题：不能热更新，推荐修改配置如下：
 
 ```js
 {
