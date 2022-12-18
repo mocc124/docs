@@ -1,8 +1,10 @@
 
 module.exports = {
+  base:"/docs/",
   title: 'junnain Blog',
   themeConfig: {
     logo: '/assets/img/logo.png',
+    lastUpdated: '最后一次更新',
     nav: [
       { text: '关于本项目', link: '/aboutThis/' },
       { text: 'Github', link: 'https://github.com/mocc124/docs' },
