@@ -1,6 +1,6 @@
 
 module.exports = {
-  // 这里需要和 github 仓库保持一直
+  // 这里需要和 github 仓库保持一致
   base:"/docs/",
   title: 'junnain Blog',
   description: "这是 junnian 的博客，记录他的生活。",
@@ -57,6 +57,7 @@ module.exports = {
         message: "发现了一些新内容.",
         buttonText: "刷新"
       }
-    }
+    },
+    '@vuepress/back-to-top':true
  }
 }

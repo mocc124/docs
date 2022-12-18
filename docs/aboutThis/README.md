@@ -218,11 +218,10 @@ module.exports = {
 
 ### 关于 pwa
 
-参考[pwa](https://vuepress.vuejs.org/zh/plugin/official/plugin-pwa.html)
+了解 pwa，请参考[MDA 渐进式应用](https://developer.mozilla.org/zh-CN/docs/Web/Progressive_web_apps)、
+[PWA 小试 - 安装应用 + manifest.json](https://blog.csdn.net/qq_35459724/article/details/123669791)
 
-可以实现网站离线访问、更新提示等功能
-
-为了兼容我们常常还需要做一下事情:
+在 VuePress 中，我们借助[pwa 插件](https://vuepress.vuejs.org/zh/plugin/official/plugin-pwa.html)，当然为了兼容我们常常还需要做以下事情:
 
 - 配置 manifest 和 icons,了解更多请参考:[PWA 关键技术 Manifest](https://leping.blog.csdn.net/article/details/78911091),工具网站:[favicon.io](https://favicon.io/)和[Manifest 图标生成工具](https://lp-pwa.gitee.io/pwa-genicon/),manifest.json 参考如下
   ```js
@@ -265,4 +264,15 @@ module.exports = {
     ],
   ```
 
-- 开发者工具 Application
+- 调试，以上工作完成之后部署访问，可以在 chrome 调试工具: Application>>Cache Storage 和 Application>>Service Workers 运行调试
+
+## 九、vssue 评论功能
+
+鉴于某些原因，我不打算添加评论功能，如想了解请参考[vssue 文档](https://vssue.js.org/zh/)、
+[视频参考](https://www.bilibili.com/video/BV1vb411m7NY/?p=10)
+
+## 十、back-to-top
+
+使用很简单，参考[@vuepress/plugin-back-to-top](https://vuepress.vuejs.org/zh/plugin/official/plugin-back-to-top.html)
+
+## 十一、google analytics
