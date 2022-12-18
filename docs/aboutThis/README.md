@@ -169,3 +169,93 @@ docs 默认为根路由
 4. 改回 base
 
 ## 八、启用 PWA
+
+### 先来看一下怎样使用插件
+
+在 .vuepress/config.js 中做一些配置来使用本地插件：
+
+```js
+module.exports = {
+  plugins: [require("./my-plugin.js")],
+};
+```
+
+使用来自依赖的插件 `plugins: [ 'vuepress-plugin-xx' ]`,以 @vuepress/plugin- 开头的插件是官方维护的插件。这些官方插件允许省略前缀，也就是这样 `plugins: [ 'xx' ]`，这和前面是等价的。
+
+有一些插件提供了配置项，那我们可以这样指定:
+
+```js
+module.exports = {
+  plugins: [
+    [
+      "vuepress-plugin-xxx",
+      {
+        /* options */
+      },
+    ],
+  ],
+};
+```
+
+或者这样一种更加简单的对象形式:
+
+```js
+module.exports = {
+  plugins: {
+    xxx: {
+      /* options */
+    },
+  },
+};
+```
+
+### 关于 pwa
+
+参考[pwa](https://vuepress.vuejs.org/zh/plugin/official/plugin-pwa.html)
+
+可以实现网站离线访问、更新提示等功能
+
+为了兼容我们常常还需要做一下事情:
+
+- 配置 manifest 和 icons,了解更多请参考:[PWA 关键技术 Manifest](https://leping.blog.csdn.net/article/details/78911091),工具网站:[favicon.io](https://favicon.io/)和[Manifest 图标生成工具](https://lp-pwa.gitee.io/pwa-genicon/),manifest.json 参考如下
+  ```js
+    {
+    "name": "junnian Blog",
+    "short_name": "Blog",
+    "description": "App description",
+    "start_url": "/index.html",
+    "display": "standalone",
+    "background_color": "#999",
+    "theme_color": "#3eaf7c",
+    "icons": [
+      {
+        "src": "/icons/192x192.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "/icons/512x512.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ],
+    "lang": "zh-CN"
+    }
+  ```
+- 配置 head links,参考配置如下:
+
+  ```js
+    head: [
+      ['link', { rel: 'icon', href: '/logo.png' }],
+      ['link', { rel: 'manifest', href: '/manifest.json' }],
+      ['meta', { name: 'theme-color', content: '#3eaf7c' }],
+      ['meta', { name: 'apple-mobile-web-app-capable', content: 'yes' }],
+      ['meta', { name: 'apple-mobile-web-app-status-bar-style', content: 'black' }],
+      ['link', { rel: 'apple-touch-icon', href: '/icons/apple-touch-icon-152x152.png' }],
+      ['link', { rel: 'mask-icon', href: '/icons/safari-pinned-tab.svg', color: '#3eaf7c' }],
+      ['meta', { name: 'msapplication-TileImage', content: '/icons/msapplication-icon-144x144.png' }],
+      ['meta', { name: 'msapplication-TileColor', content: '#000000' }]
+    ],
+  ```
+
+- 开发者工具 Application
