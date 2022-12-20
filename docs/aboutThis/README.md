@@ -277,8 +277,6 @@ module.exports = {
 
 ## 十一、google analytics
 
-[](https://analytics.google.com/analytics/web/provision/?hl=zh_CN#/provision)
-
 1. 创建 google 账号并登入 [google analytics](https://analytics.google.com/)，还需要配置媒体资源以及数据流
 2. 为我们的项目配置依赖参考: [@vuepress/plugin-google-analytics](https://vuepress.vuejs.org/zh/plugin/official/plugin-google-analytics.html)
 3.
