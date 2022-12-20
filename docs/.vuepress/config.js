@@ -14,7 +14,7 @@ module.exports = {
       name: 'keywords',
       content: 'VuePress,博客,个人,前端,CSS,JavaSscript,HTML,Vue,TypeScript,ES6'
     }],
-    ['link', { rel: 'manifest', href: '/manifest.json' }],
+    ['link', { rel: 'manifest', href: '/manifast.json' }],
     ['meta', { name: 'theme-color', content: '#3eaf7c' }],
     ['meta', { name: 'apple-mobile-web-app-capable', content: 'yes' }],
     ['meta', { name: 'apple-mobile-web-app-status-bar-style', content: 'black' }],
@@ -49,7 +49,7 @@ module.exports = {
       },
     ]
   },
-  // 启用 pwa 插件
+  // 依赖
   plugins: {
    '@vuepress/pwa': {
       serviceWorker: true,
