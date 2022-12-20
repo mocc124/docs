@@ -58,6 +58,9 @@ module.exports = {
         buttonText: "刷新"
       }
     },
-    '@vuepress/back-to-top':true
+    '@vuepress/back-to-top': true,
+    '@vuepress/google-analytics':{
+        'ga': 'G-G8EXPN97LJ' // 跟踪索引
+    }
  }
 }

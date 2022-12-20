@@ -276,3 +276,10 @@ module.exports = {
 使用很简单，参考[@vuepress/plugin-back-to-top](https://vuepress.vuejs.org/zh/plugin/official/plugin-back-to-top.html)
 
 ## 十一、google analytics
+
+[](https://analytics.google.com/analytics/web/provision/?hl=zh_CN#/provision)
+
+1. 创建 google 账号
+2. 登入 google analytics，并创建媒体资源以及数据流
+3. 为项目配置依赖 [@vuepress/plugin-google-analytics](https://vuepress.vuejs.org/zh/plugin/official/plugin-google-analytics.html)
+4.
