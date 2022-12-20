@@ -6,19 +6,16 @@ module.exports = {
   description: "这是 junnian 的博客，记录他的生活。",
   head: [
     ['link', { rel: 'icon', href: '/favicon.ico' }],
-    ['meta', {
-      name: 'author',
-      content: 'junnian'
-    }],
+    ['meta', { name: 'author',content: 'junnian' }],
     ['meta', {
       name: 'keywords',
       content: 'VuePress,博客,个人,前端,CSS,JavaSscript,HTML,Vue,TypeScript,ES6'
     }],
-    ['link', { rel: 'manifest', href: '/manifast.json' }],
+    ['link', { rel: 'manifast', href: '/manifast.json' }],
     ['meta', { name: 'theme-color', content: '#3eaf7c' }],
     ['meta', { name: 'apple-mobile-web-app-capable', content: 'yes' }],
     ['meta', { name: 'apple-mobile-web-app-status-bar-style', content: 'black' }],
-    ['link', { rel: 'apple-touch-icon', href: '/icons/192x192.png' }],
+    ['link', { rel: 'apple-touch-icon', href: '/icons/192x192.png' }], // /icons/192x192.png
     ['link', { rel: 'mask-icon', href: '/icons/safari-pinned-tab.svg', color: '#3eaf7c' }],
     ['meta', { name: 'msapplication-TileImage', content: '/icons/144x144.png' }],
     ['meta', { name: 'msapplication-TileColor', content: '#000000' }]
@@ -28,7 +25,10 @@ module.exports = {
     lastUpdated: '最后一次更新',
     nav: [
       { text: '关于本项目', link: '/aboutThis/' },
-      { text: 'Github', link: 'https://github.com/mocc124/docs' },
+      { text: 'TypeScript', link: '/TypeScript/' },
+      { text: 'Git', link: '/Git/' },
+      { text: '关于本项目', link: '/aboutThis/' },
+      { text: 'Github', link: 'https://github.com/mocc124' },
       {
         text: '资源推荐', items: [
           {
@@ -47,7 +47,8 @@ module.exports = {
           }
         ]
       },
-    ]
+    ],
+    sidebar: 'auto'
   },
   // 依赖
   plugins: {
@@ -60,7 +61,7 @@ module.exports = {
     },
     '@vuepress/back-to-top': true,
     '@vuepress/google-analytics':{
-        'ga': 'G-G8EXPN97LJ' // 跟踪索引
+        'ga': 'G-G8EXPN97LJ' // 跟踪 id
     }
  }
 }

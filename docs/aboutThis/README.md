@@ -218,7 +218,7 @@ module.exports = {
 
 ### 关于 pwa
 
-了解 pwa，请参考[MDA 渐进式应用](https://developer.mozilla.org/zh-CN/docs/Web/Progressive_web_apps)、
+了解 pwa，请参考[MDN 渐进式应用](https://developer.mozilla.org/zh-CN/docs/Web/Progressive_web_apps)、
 [PWA 小试 - 安装应用 + manifest.json](https://blog.csdn.net/qq_35459724/article/details/123669791)
 
 在 VuePress 中，我们借助[pwa 插件](https://vuepress.vuejs.org/zh/plugin/official/plugin-pwa.html)，当然为了兼容我们常常还需要做以下事情:
@@ -279,7 +279,7 @@ module.exports = {
 
 [](https://analytics.google.com/analytics/web/provision/?hl=zh_CN#/provision)
 
-1. 创建 google 账号
-2. 登入 google analytics，并创建媒体资源以及数据流
-3. 为项目配置依赖 [@vuepress/plugin-google-analytics](https://vuepress.vuejs.org/zh/plugin/official/plugin-google-analytics.html)
+1. 创建 google 账号并登入 [google analytics](https://analytics.google.com/)，还需要配置媒体资源以及数据流
+2. 为我们的项目配置依赖参考: [@vuepress/plugin-google-analytics](https://vuepress.vuejs.org/zh/plugin/official/plugin-google-analytics.html)
+3.
 4.
