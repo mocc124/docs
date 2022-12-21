@@ -277,5 +277,7 @@ module.exports = {
 
 ## 十一、网站分析
 
+参考:[VuePress 博客优化之添加数据统计功能](https://segmentfault.com/a/1190000041259928)
+
 1. 使用[google analytics](https://analytics.google.com/)或[百度分析](https://tongji.baidu.com/)
 2. google analytics 插件配置: [@vuepress/plugin-google-analytics](https://vuepress.vuejs.org/zh/plugin/official/plugin-google-analytics.html)
