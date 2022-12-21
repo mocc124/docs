@@ -193,7 +193,7 @@ Github 已经在 2021 年开始需要生成个人 token 来 push 了，需要 se
    - 紧急修复 Bug 的分支，由 master 分支创建，修补结束以后，再合并进 master 和 dev 分支
    - 修复工作完成，它们就会被合并进 master 或 dev 分支 （仅能通过 Pull Request 的方式），然后就被删除
 
-### 示例工作流参考
+### 开发者工作流参考
 
 1. 克隆 dev 分支到本地 `git clone -b dev ...`
 

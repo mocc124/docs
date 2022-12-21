@@ -275,9 +275,7 @@ module.exports = {
 
 使用很简单，参考[@vuepress/plugin-back-to-top](https://vuepress.vuejs.org/zh/plugin/official/plugin-back-to-top.html)
 
-## 十一、google analytics
+## 十一、网站分析
 
-1. 创建 google 账号并登入 [google analytics](https://analytics.google.com/)，还需要配置媒体资源以及数据流
-2. 为我们的项目配置依赖参考: [@vuepress/plugin-google-analytics](https://vuepress.vuejs.org/zh/plugin/official/plugin-google-analytics.html)
-3.
-4.
+1. 使用[google analytics](https://analytics.google.com/)或[百度分析](https://tongji.baidu.com/)
+2. google analytics 插件配置: [@vuepress/plugin-google-analytics](https://vuepress.vuejs.org/zh/plugin/official/plugin-google-analytics.html)
