@@ -46,32 +46,32 @@ module.exports = {
             text: "基础",
             items: [
               { text: 'HTML/CSS/JavaScript', link: 'https://developer.mozilla.org/zh-CN/' },
-              { text: 'ES6', link: 'https://zh.javascript.info/' },
-              { text: '设计模式', link: 'https://zh.javascript.info/' },
-              { text: 'CSS3', link: 'https://zh.javascript.info/' },
-              { text: 'RegExp', link: 'https://zh.javascript.info/' },
+              { text: 'ES6', link: '' },
+              { text: '设计模式', link: '' },
+              { text: 'CSS3', link: '' },
+              { text: 'RegExp', link: '' },
             ]
           },
           {
             text: "进阶",
             items: [
-              { text: 'Vue2', link: 'https://blog.csdn.net/qq1195566313' },
-              { text: 'Vue3', link: 'https://blog.csdn.net/qq1195566313' },
-              { text: 'React', link: 'https://blog.csdn.net/qq1195566313' },
-              { text: 'Axios', link: 'https://blog.csdn.net/qq1195566313' },
-              { text: 'Less/Sass', link: 'https://blog.csdn.net/qq1195566313' },
-              { text: 'Webpack', link: 'https://blog.csdn.net/qq1195566313' },
-              { text: 'Git', link: 'https://blog.csdn.net/qq1195566313' },
-              { text: 'uni-app', link: 'https://blog.csdn.net/qq1195566313' },
+              { text: 'Vue2', link: '' },
+              { text: 'Vue3', link: '' },
+              { text: 'React', link: '' },
+              { text: 'Axios', link: '' },
+              { text: 'Less/Sass', link: '' },
+              { text: 'Webpack', link: '' },
+              { text: 'Git', link: '' },
+              { text: 'uni-app', link: '' },
             ]
           },
           {
             text: "深入",
             items: [
-              { text: '计算机网络', link: 'https://blog.csdn.net/qq1195566313' },
-              { text: '浏览器原理', link: 'https://blog.csdn.net/qq1195566313' },
-              { text: 'TypeScript', link: 'https://blog.csdn.net/qq1195566313' },
-              { text: 'Node.js', link: 'https://blog.csdn.net/qq1195566313' },
+              { text: '计算机网络', link: '' },
+              { text: '浏览器原理', link: '' },
+              { text: 'TypeScript', link: '' },
+              { text: 'Node.js', link: '' },
             ]
           }
         ]
