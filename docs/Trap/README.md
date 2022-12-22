@@ -7,6 +7,7 @@
 - 设计模式
 - CSS3
 - RegExp
+- [ES 模块](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Guide/Modules)
 
 - Vue2 全家桶
 - Vue3

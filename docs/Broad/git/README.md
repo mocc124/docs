@@ -126,13 +126,15 @@ git status # ???
 - `git diff <id1><id1><id2>` 比较两次提交之间的差异
 - `git diff --cached` 比较暂存区和版本库差异
 
+- `git switch -c` 来创建并切换分支，推荐使用这个新指令，因为 checkout 指令负担过重
+
 [Git 由浅入深之分支管理](https://zhuanlan.zhihu.com/p/26227256)
 
 ## 二、 提交到远程仓库
 
 一般企业会选择使用 GitLab 或者 Bitbucket 搭建私有服务器仓库，或者选择一些公共云服务器仓库，如 Github、Gitee。
 
-Github 已经在 2021 年开始需要生成个人 token 来 push 了，需要 setting>>Deveioper settings>>Personal access tokens 设置
+Github 已经在 2021 年开始需要生成个人 token 来 push 了，需要去 setting>>Deveioper settings>>Personal access tokens 进行响应设置才可以。
 
 下面列出一些远程版本库常用命令：
 

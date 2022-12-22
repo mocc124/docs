@@ -3,7 +3,7 @@ module.exports = {
   // 这里需要和 github 仓库保持一致
   base: "/docs/",
   // SEO优化
-  title: 'junnain Blog',
+  // title: 'junnain Blog',
   description: "这是 junnian 的博客，记录他的生活。",
   head: [
     ['link', { rel: 'icon', href: '/favicon.ico' }],
@@ -39,6 +39,7 @@ module.exports = {
     lastUpdated: '最后一次更新',
     nav: [
       { text: 'About this', link: '/aboutThis/' },
+      { text: 'ninja or killer', link: '/jsReview/' },
       { text: 'Amway', link: '/Amway/' },
       {
         text: 'The path ninja', items: [
@@ -50,19 +51,21 @@ module.exports = {
               { text: '设计模式', link: '' },
               { text: 'CSS3', link: '' },
               { text: 'RegExp', link: '' },
+              { text: 'JS module', link: '/Broad/module/' },
             ]
           },
           {
             text: "进阶",
             items: [
-              { text: 'Vue2', link: '' },
-              { text: 'Vue3', link: '' },
+              { text: 'Vue', link: '/Broad/vue/' },
               { text: 'React', link: '' },
               { text: 'Axios', link: '' },
               { text: 'Less/Sass', link: '' },
               { text: 'Webpack', link: '' },
-              { text: 'Git', link: '' },
+              { text: 'Git', link: '/Broad/git/' },
               { text: 'uni-app', link: '' },
+              { text: 'TypeScript', link: '/Broad/ts/' },
+              { text: 'Node.js', link: '' },
             ]
           },
           {
@@ -70,8 +73,6 @@ module.exports = {
             items: [
               { text: '计算机网络', link: '' },
               { text: '浏览器原理', link: '' },
-              { text: 'TypeScript', link: '' },
-              { text: 'Node.js', link: '' },
             ]
           }
         ]
