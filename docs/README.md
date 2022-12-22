@@ -2,15 +2,15 @@
 home: true
 heroImage: "/assets/img/smoke.png"
 heroText: junnian Blog
-tagline: 需要的不外乎是“路程”，也许能一步到位。（计划调用一言 api实现）
+tagline: 需要的不外乎是“路程”，也许能一步到位。（使用一言 api实现）
 # actionText: 前往了解 →
 actionLink: /zh/guide/
-features:
-  - title: 简洁至上
-    details: 以 Markdown 为中心的项目结构，以最少的配置帮助你专注于写作。
-  - title: Git
-    details: 我的GitHub地址
-  - title: Title3
-    details:
+# features:
+#   - title: What
+#     details: 这个问题的本质是什么？
+#   - title: Why
+#     details: 为什么会导致这个问题？
+#   - title: How
+#     details: 如何达成目标或处理问题？
 footer: MIT Licensed | Copyright © 2018-present Evan You
 ---
