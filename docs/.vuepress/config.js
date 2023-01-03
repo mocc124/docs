@@ -63,6 +63,7 @@ module.exports = {
               { text: 'Less/Sass', link: '' },
               { text: 'Webpack', link: '' },
               { text: 'Git', link: '/Broad/git/' },
+              { text: 'Echarts', link: '/Broad/Echarts/' },
               { text: 'uni-app', link: '' },
               { text: 'TypeScript', link: '/Broad/ts/' },
               { text: 'Node.js', link: '' },
