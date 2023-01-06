@@ -281,3 +281,119 @@ module.exports = {
 
 1. 使用[google analytics](https://analytics.google.com/)或[百度分析](https://tongji.baidu.com/)
 2. google analytics 插件配置: [@vuepress/plugin-google-analytics](https://vuepress.vuejs.org/zh/plugin/official/plugin-google-analytics.html)
+
+## 十二、config.js分割
+伴随着项目的壮大，config 配置文件会越来越复杂，变得难以维护，因此需要将config配置模块化。
+有两种选择：CommonJs 和 ES Module，我常用的是 ES Module，但在此项目中似乎ES Module有一些问题，最终采用了CommonJs方案。
+
+关于 [CommonJs 和 ES Module](https://juejin.cn/post/6994224541312483336)
+
+文件结构:
+```
+.vuepress
+│
+│  config.js
+│
+├─config
+│      head.js
+│      nav.js
+│      plugins.js
+│
+├─config.js
+│  
+└─...
+```
+
+## 十三、隐私保护
+在上传到 github 的文件中，有一些配置文件中含有隐私信息，对此的解决方案是将隐私信息模块化处理， 在采用`.env`或`.gitignore`配置此类文件不同步的方式。
+
+## 十四、Markdown 语法拓展
+
+### front matter
+在 VuePress 中，front matter（可选）必须是 markdown 文件中的第一部分，并且必须采用在三点划线之间书写的有效的 YAML、JSON 或者 TOML 格式。
+
+```md
+---
+title: Blogging with VuePress
+lang: zh-CN
+---
+
+# {{ $frontmatter.title }}
+
+My blog post is written in {{ $frontmatter.lang }}.
+```
+front matter主要被用来做预定义变量和主题的预定义配置，详细见[文档](https://vuepress.vuejs.org/zh/guide/frontmatter.html#%E9%A2%84%E5%AE%9A%E4%B9%89%E5%8F%98%E9%87%8F)
+### Emoji
+Vuepress 维护了一个 [emoji 库](https://github.com/markdown-it/markdown-it-emoji/blob/master/lib/data/full.json)，这样使用时只需要在键前后加冒号即可。
+
+### Vuepress 中使用 Vue
+
+docs/.vuepress/components 目录中的 Vue 组件将会被自动注册为全局组件。
+
+下面这是一个引用了 [CountUp.js](https://inorganik.github.io/countUp.js/) 的vue组件，基本结构:
+```vue
+<template>
+  <div class="container">
+    <ClientOnly>
+      <slot name="before"></slot>
+      <span ref="countUp" class="tag"></span>
+    </ClientOnly>
+    <hr>
+  </div>
+</template>
+
+<script>
+export default {
+  name: "CountUP",
+  data(){
+    return {
+      counter:null
+    }
+  },
+  methods:{
+    init() {
+      import('countup.js').then(module => {
+        this.counter = new module.CountUp(this.$refs.countUp, 0, {
+          startVal:this.$props.startVal,
+        })
+        if (!this.counter.error) {
+          setTimeout(()=>{
+            this.counter.start();
+          },this.$props.delay)
+        } else {
+          console.error(this.counter.error);
+        }
+      })
+    }
+  },
+  mounted () {
+    this.init()
+  },
+  beforeDestroy() {
+    this.counter.reset();
+    this.counter = null;
+  },
+  props:{
+    startVal:{
+      type: Number,
+      default() {
+        return 2000
+      }
+    },
+    delay: {
+      type:Number,
+      default() {
+        return 1
+      }
+    }
+  }
+}
+</script>
+
+<style scoped>
+
+</style>
+```
+在组件中直接使用即可:`<CountUp :startVal="7003" />`
+
+
