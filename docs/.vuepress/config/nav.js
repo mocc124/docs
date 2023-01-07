@@ -6,8 +6,10 @@ module.exports = [
             { text: 'ES6', link: '' },
             { text: 'CSS3', link: '' },
             { text: 'RegExp', link: '' },
-            { text: 'Git', link: '/Broad/git/' },
-            { text: 'Echarts', link: '/Broad/Echarts/' },
+            { text: 'Git', link: '/basis/git/' },
+            { text: '模块化', link: '/basis/module/' },
+            { text: '网络请求', link: '/basis/requests/' },
+            { text: 'Echarts', link: '/basis/Echarts/' },
         ]
     },
     {text: '前端进阶内容', items:[
