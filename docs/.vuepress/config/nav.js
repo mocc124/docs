@@ -5,17 +5,16 @@ module.exports = [
             { text: 'HTML/CSS/JavaScript', link: 'https://developer.mozilla.org/zh-CN/' },
             { text: 'ES6', link: '' },
             { text: 'CSS3', link: '' },
-            { text: 'RegExp', link: '' },
+            { text: 'RegExp', link: '/basis/regexp/' },
             { text: 'Git', link: '/basis/git/' },
-            { text: '模块化', link: '/basis/module/' },
-            { text: '网络请求', link: '/basis/requests/' },
-            { text: 'Echarts', link: '/basis/Echarts/' },
+            { text: 'Axios', link: '/basis/axios/' },
         ]
     },
     {text: '前端进阶内容', items:[
             { text: '设计模式', link: '' },
             { text: 'JS module', link: '/Broad/module/' },
             { text: 'Vue', link: '/Broad/vue/' },
+            { text: 'Echarts', link: '/basis/Echarts/' },
             { text: 'React', link: '' },
             { text: 'Axios', link: '' },
             { text: 'Less/Sass', link: '' },
@@ -30,9 +29,10 @@ module.exports = [
             { text: '关于此项目', link: '/aboutThis/' },
             { text: '挖坑', link: '' },
             { text: '填坑', link: '' },
-            { text: '杀手还是忍者', link: '/jsReview/' },
+            { text: '杀手还是忍者', link: '/other/jsReview/' },
         ]
     },
     { text: '推荐资源/工具 🔗', link: '/Amway/' },
     { text: 'Github', link: 'https://github.com/mocc124'},
+    { text: '扩展', link: '/expand/' },
 ]

@@ -41,6 +41,7 @@ async function getUser() {
   }
 }
 ```
+
 ### Post 请求
 ```js
 axios.post('/user', {
@@ -75,6 +76,7 @@ Promise.all([get1.requestGet(),get2.requestGet(),get3.requestGet()])
         // ...
     });
 ```
+
 ### axios(config)
 除了使用 axios 实例方法外，axios还提供了另外一种解决方案：向 axios 传递相关配置来创建请求，`axios(config)`
 ```js
@@ -372,5 +374,66 @@ service.interceptors.response.use(
 
 export  default  service
 ```
+
+### 更改请求体编码格式
+默认情况下，axios 会将 JavaScript 对象序列化为 JSON，也就是以application/json格式编解码。
+
+如果想要使用 application/x-www-form-urlencoded 格式编解码数据，可以使用 [URLSearchParams API](https://developer.mozilla.org/zh-CN/docs/Web/API/URLSearchParams)
+也可以使用现在热门的[qs 库](https://github.com/ljharb/qs)，如下：
+```js
+import qs from 'qs';
+const data = { 'bar': 123 };
+const options = {
+  method: 'POST',
+  headers: { 'content-type': 'application/x-www-form-urlencoded' },
+  data: qs.stringify(data),
+  url,
+};
+axios(options);
+```
+
+Node环境下请参考[官方文档](https://www.axios-http.cn/docs/urlencoded)
+
+参考：[JS URL()和URLSearchParams() API接口详细介绍](https://www.zhangxinxu.com/wordpress/2019/08/js-url-urlsearchparams/?shrink=1)
+
+## 补充：HTTP 中 POST 提交数据的四种方式
+HTTP 是如何传输表单数据的。HTTP 是以ASCII 码传输的，建立在TCP/IP 协议之上的应用层规范。
+HTTP 请求包括：请求行、请求头、消息主体数据，如下格式：
+```
+<method> <url> <version>
+<headers>
+<entity-body>
+```
+
+最原始的 form 表单发送请求，常见属性如下：
+- action：属性定义发送数据要去的地方，如：www.baidu.com
+- method：属性定义如何发送数据，常见的方法有：POST,GET,HEAD,PATCH……
+- name：属性定义表单的名字
+- enctype：定义表单的数据如何编码。如：POST 中对发送数据的四种编码方式。
+- target：提交表单后，在那个页面显示响应内容
+
+```html
+<form method="post" enctype="multipart/form-data" name="myForm" action="https://www.baidu.com"> 
+  <div>
+    <label for="file">选择附件：</label>
+    <input type="file" id="file" name="myFile">
+  </div>
+  <div>
+    <button type=“submit”>提交</button>
+  </div>
+</form>
+```
+触发 submit 按钮后，浏览器会对表单内容会以 multipart/form-data 编码，采用 POST 的方法向指定主机发送数据。
+
+Content-Type 有4个可选值：
+- application/x-www-form-urlencoded （URL encoded，默认，常见的 Ajax 也默认是这种格式）
+- multipart/form-data （键值对型数据，多用与客户端向服务端传送大文件数据，如：图片或者文件。）
+- application/json （数据将以 JSON 字符串的形式编解码）
+- text/xml （xml）
+
+测试以上编码格式，推荐使用[httpbin.org](http://httpbin.org/)
+
+
+
 
 
