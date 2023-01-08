@@ -7,6 +7,7 @@ Axios 是一个基于 promise 网络请求库，作用于node.js 和浏览器中
 因为使用简单,包尺寸小且提供了易于扩展的接口被广泛使用。
 
 [Axios 官方地址](https://www.axios-http.cn/)
+[TypeScript 从零实现 axios](https://jonesxie.github.io/ts-axios/chapter1/)
 
 优点:
 - 支持 Promise
@@ -185,14 +186,8 @@ MyAxios.get('api/users',{
 })
 ```
 
-
-
-
-
-
 ### 拦截器
-
-
+自定义响应拦截和请求拦截
 ```vue
 <script>
 import axios from "axios"
@@ -255,3 +250,127 @@ export default {
 }
 </script>
 ```
+
+### 错误处理
+关于响应状态，可以查看[文档](https://www.axios-http.cn/docs/res_schema)
+```js
+this.MyAxios.get('api/users',{
+  timeout:1, // 将响应缩短至1ms,必定会响应超时
+  params:{
+    page:1
+  }
+}).then(res=>{
+  console.log(res?.data)
+}).catch(error=>{
+  if (error.response) { // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+    console.log(error.response.data);
+    console.log(error.response.status);
+    console.log(error.response.headers);
+  } else if (error.request) { // 请求已经成功发起，但没有收到响应
+    console.log(error.request);
+  } else { // 其它问题
+    console.log('Error', error.message);
+    // 补充：toJSON 可以获取更多HTTP错误的信息
+    console.log(error.toJSON());
+  }
+  console.log(error.config);
+})
+```
+
+### 自定义状态边界
+正常来说 [HTTP status](https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest/status) 在 200 和 300 之间是一个合法值，在这个区间之外则创建一个错误。
+有些时候我们想自定义这个规则，比如认为 304 也是一个合法的状态码，所以axios 提供了一个配置，允许我们自定义合法状态码规则：
+```js
+this.MyAxios.get('https://mocc124.github.io/docs/.html',{
+  timeout:1000,
+  validateStatus: function (status) {
+      return status>=200 && status<=500; // 状态码介于200至500，则promise 状态变为resolve状态，均可以被.then处理
+  }
+}).then((res)=>{
+    console.log(res)
+}).catch((err)=>{
+    console.error(err)
+})
+```
+
+### 取消请求
+axios提供了两种取消请求的方式：
+fetch API 方式（AbortController）和 cancel token API（CancelToken），推荐使用第一种方式，因为cancel token API已经准备遗弃了。
+下面只介绍fetch API 方式，了解更多请前往[取消请求文档](https://www.axios-http.cn/docs/cancellation)
+
+一般取消请求应用场景：防止重复提交某个请求（也有其它方式解决这个问题，如debounce），思路如下
+- 我们需要对所有正在进行中的请求进行缓存。在请求发起前判断缓存列表中该请求是否正在进行，如果有则取消本次请求。
+- 在任意请求完成后，需要在缓存列表中删除该次请求，以便可以重新发送该请求
+
+```js
+import axios from "axios";
+
+// 正在进行中的请求列表
+let reqList = []
+
+/**
+ * 允许某个请求可以继续进行
+ * @param {array} reqList 全部请求列表
+ * @param {string} url 请求地址
+ */
+const allowRequest = function (reqList, url) {
+    reqList.splice(reqList.indexOf(url),1)
+}
+
+const service = axios.create({
+    timeout:2000,
+    baseURL:"https://reqres.in/",
+});
+
+// 请求拦截器
+service.interceptors.request.use(
+    config => {
+        let cancel // 保存取消请求的函数
+        // 设置cancelToken对象
+        config.cancelToken = new axios.CancelToken(function executor(c) {
+            // executor 函数接收一个 cancel 函数作为参数
+            cancel = c;
+        })
+        let {params,url} = config
+        url+="?"
+        for (const key in params) {
+            url += `${key}=${params[key]}&`
+        }
+
+        // 阻止重复请求。当上个请求未完成时，相同的请求不会进行
+        const errorMsg = `${url} 请求被中断`
+        reqList.includes(url)?cancel(errorMsg): reqList.push(url);
+        return config
+    },
+    err => Promise.reject(err)
+)
+
+// 响应拦截器
+service.interceptors.response.use(
+    response => {
+        // 增加延迟，相同请求不得在短时间内重复发送
+        setTimeout(() => {
+            allowRequest(reqList, response.config.url)
+        }, 1000)
+        // ...请求成功后的后续操作
+        return response
+    },
+    error => {
+        console.log(reqList)
+        if (axios.isCancel(error)) { // axios.isCancel(error)判断是不是取消请求导致的请求失败
+            console.log("请求取消: ", error.message);
+        } else {
+            // 增加延迟，相同请求不得在短时间内重复发送
+            setTimeout(() => {
+                allowRequest(reqList, error.config.url)
+            }, 1000)
+        }
+        // ...请求失败后的后续操作
+        return Promise.reject(error);
+    }
+)
+
+export  default  service
+```
+
+
