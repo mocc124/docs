@@ -177,7 +177,7 @@ VS Code插件推荐：
 npm run dev的全过程：
 npm run dev ---> package.json/scripts/dev ---> vite ---> bin（软链接）-->node modules/.bin/vite（跨平台兼容） --> npm install -g（全局包）--> 环境变量 --> Error
 
-## 第三章：模板语法和 vue 指令
+## 第四章：模板语法和 vue 指令
 三种书写风格：
 一、Vue3 依然支持 Vue2 option API 的书写风格：
 ```vue
@@ -237,20 +237,38 @@ v-on: ， 绑定事件，语法糖使用@替换v-on:，动态事件`@[event]='xx
 内置修饰符：
 .stop - 阻止冒泡事件
 其它指令见[官网文档 v-on](https://cn.vuejs.org/api/built-in-directives.html#v-on)
+```vue
+<template>
+  <div class="container">
+    <div @click="click">
+      <button @[event].stop="click"></button>
+    </div>
+  </div>
+</template>
 
-v-bind: ，绑定元素prop、style、class，语法糖使用:替换v-bind:
+<script setup lang="ts">
+const event = "click";
+const click = function () {/* ... */}
+</script>
+```
+
+v-bind: ，绑定元素prop、style、class，语法糖:使用:替换v-bind:
 ```vue
 <template>
   <div class="container">
     <!-- 动态class-->
-    <div :class="[isRed?'red':'blue']"></div>
-    <!-- 多个class-->
-    <div :class="red" class="main"></div>
+    <div :class="[isRed?'red':'blue']" ></div>
+    <!-- class动态绑定，绑定style-->
+    <div :class="Red" class="main,red" :style="border"></div>
   </div>
 </template>
+
 <script setup lang="ts">
+const Red:string = "red";
 const isRed:boolean = true;
+const border = "border:1px solid #ccc"
 </script>
+
 <style>
 .red {
   width: 100px;
@@ -265,8 +283,80 @@ const isRed:boolean = true;
 </style>
 ```
 
+v-model: ，双向绑定
+```vue
+<template>
+  <input type="text" v-model="input">
+  <p>content：{{input}}</p>
+</template>
+<script setup lang="ts">
+const input:string = "请输入"
+</script>
+```
+上面是实现不了双向绑定的，只有使用ref或reactive所包裹起来的值才是响应式的
+```vue
+<script setup lang="ts">
+import {ref} from "vue"
+const input:string = ref("请输入")
+</script>
+```
 
-## 第四章：
-## 第五章：
+v-for: 遍历,支持嵌套循环，注意key属性的用法
+```vue
+<template>
+  <div v-for="(item,index) in arr" :key="index">
+    {{item}}-{{index}}
+  </div>
+</template>
+<script setup lang="ts">
+const arr:string[] = ["a","b","c"]
+</script>
+```
+
+v-once，添加了此属性的元素只会被渲染一次
+v-memo，Vue3.2新增的内置指令，类似与v-once，大致的作用就是小幅度手动提升一部分性能，一般是配合v-for使，[Vue3.2 新增 v-memo](https://juejin.cn/post/7180973915580137527)
+
+## 第五章：虚拟dom和diff算法
+学习源码可以了解更好的api算法和代码逻辑，可以在开发环境中快速定位问题。而且面试会问这些。
+
+虚拟DOM，就是通过js生成的一个AST抽象语法树，这种思路在TS转JS、babel插件中ES6转ES5的过程中，甚至V8引擎在js解析为字节码的过程中也会进行AST转换，被证明是可行的。
+
+AST在线解析:[Vue 3 Template Explorer](https://template-explorer.vuejs.org/#eyJzcmMiOiI8ZGl2IGNsYXNzPVwiY29udGFpbmVyXCI+XHJcbiAgPGRpdiBjbGFzcz1cIm1haW5cIj48L2Rpdj5cclxuICA8ZGl2IGNsYXNzPVwiZm9vdGVyXCI+PC9kaXY+XHJcbjwvZGl2PiIsIm9wdGlvbnMiOnt9fQ==)
+
+通过上面的网址我们可以看到，使用js描述Dom对象是方便且节省性能的，还可以做一些算法优化和节点复用。 
+diff算法（源码在Vue/Core/render.ts 1631 line）最显著可以在v-for的key属性被感知。
+
+有key的diff算法：
+Vue3 ：前序算法（检查C1、C2的type/key是否相同；不相同，就break）
+--->尾序算法（检查C1、C2的type/key是否相同；不相同，就break）
+--> patch,对多出来的元素进行新增节点 
+---> unmount,对少的元素进行删除
+---> 针对特殊的乱序情况，会有最长递增子序列的算法（建立映射关系-建立新在旧节点的位置（有多余的旧节点或新节点不在旧节点中就卸载掉）-乱序清况，就求最长递增子序列算法底层是贪心+二分查找）
+--> 当前遍历节点不在子序列，就移动，在子序列就直接跳过。
+
+无key的diff算法：通过for循环重新patch，渲染这个元素-->删除-->新增
+
+![Vue3 diff算法](https://img-blog.csdnimg.cn/1fe57a274d8644bfacf44526e79d57bc.png)
+
+补充：Vue2采用的是双端diff算法（头尾分别比较，然后头尾交叉比较），注意V3只做了头尾比较，省略了交叉比较这一步，优化了v2的diff算法。
+
+## 第六章 Ref
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## 第六章：
 
