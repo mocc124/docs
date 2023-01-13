@@ -342,21 +342,173 @@ Vue3 ：前序算法（检查C1、C2的type/key是否相同；不相同，就bre
 
 ## 第六章 Ref
 
+回顾一下Vue2的响应式原理：
+```vue
+<script >
+export  default  {
+  data(){
+    return {
+      // ...
+    }
+  }
+}
+</script>
+```
+在Vue3中，所有被ref或者reactive系列包裹的值才可以做到响应式。
+```vue
+<template>
+  <div>{{data.arr}}</div>
+  <button @click="click">click</button>
+</template>
+
+<script setup lang='ts'>
+import { ref } from 'vue'
+type D = {
+  type:string,
+  arr:number[]
+}
+let data= ref<D>({type:"xxx",arr:[1,2,3]})// 泛型的方式，类型简单
+let click = function () {
+  data.value.arr.push(Math.floor(Math.random()*10))
+}
+</script>
+```
+复杂类型推荐使用 Ref，如下：
+```vue
+<template>
+  <div>{{data.arr}}</div>
+  <button @click="click">click</button>
+</template>
+
+<script setup lang='ts'>
+import { ref } from 'vue'
+import type { Ref } from 'vue'
+type D = {
+  type:string,
+  arr:number[]
+}
+let data:Ref<D>= ref({type:"xxx",arr:[1,2,3]}) // interface 类型复杂
+let click = function () {
+  data.value.arr.push(Math.floor(Math.random()*10))
+}
+</script>
+```
+ref返回了一个 ES6 类，他有一个属性value。在取值或者修改时，必须加.value（固定语法）
+`import type { isRef } from 'vue'`可以判断是否为ref对象
+`import type { shallowRef } from 'vue'`只能做浅层响应，只到.value层级
+`import type { triggerRef } from 'vue'`强制更新收集的依赖，ref底层会调用这个triggerRef
+
+注意：shallowRef和ref不能混用，ref更新时会导致shallowRef的视图也更新（因为ref底层更新是会调用triggerRef，会强制更新收集的依赖）。
+
+`import type { customRef } from 'vue'`可以创建一个自定义的 ref，并对其依赖项跟踪和更新触发进行显式控制。
+```vue
+<template>
+  <div>{{obj}}</div>
+  <button @click="click">click</button>
+</template>
+
+<script setup lang='ts'>
+  import { customRef } from 'vue'
+  function myRef<T>(value:T) {
+    return customRef((track,triger)=>{
+      let timer:any 
+      return {
+        get(){
+          track()// 收集依赖
+          return value
+        },
+        set(newVal){
+          clearTimeout(timer);
+          timer = setTimeout(()=>{
+            value = newVal;
+            clearTimeout(timer);
+            triger() // 触发依赖
+          },500)
+        },
+      }
+    })
+  }
+  
+	let obj = myRef<String>("初始文本")
+  
+	let click = function () {
+  	obj.value = "customRef 更改了"
+	}
+</script>
+
+<style scoped>
+</style>
+```
+
+浏览器>>devtools>>启用自定义格式设置工具 可以解决 console打印ref、reactive 需要点两层的问题。
+
+ref也可以被用来获取dom元素,如下：
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const msg = ref('Hello World!')
+
+const strBox = ref<HTMLDivElement>() // 常量名和标签属性需保持一致
+
+setTimeout(()=>{console.log(strBox.value?.innerText)},1000)
+
+</script>
+
+<template>
+  <h1>{{ msg }}</h1>
+  <input v-model="msg">
+  <div ref="strBox">JavaScript...</div>
+</template>
+```
+ref源码位置： packages/reactivity/ref.ts 67 line，ref函数支持函数重载，支持多种函数参数，调用createRef()判断是否为ref对象，是就直接返回，否则通过RefImpl类创建一个ref对象，
+
+RefImpl类接受两个属性(value,isShallow),它的私有属性_value就是将被读取的值，_v_isShallow（）为false调用Toreactive(),判断是否为引用类型，是调用reactive(),不是直接返回值
 
 
+ref和shallowRef写一块会影响视图更新，因为triggerRef可以强制更新shallowRef的值，Ref和triggerRef底层都是调用triggerRefValue，triggerRefValue又会调用triggerEffects更新依赖，所以会一块将shallowRef的依赖也更新。
 
 
+## 第七章 Reactive
+ref和Reactive区别1：ref支持所有类型，reactive只支持引用类型（Arr、Object、Map、Set）
+ref和Reactive区别2：ref取值赋值都需要加.value，reactive可以直接读写值
 
+Reactive包裹的数据是通过proxy代理的对象，不能被直接赋值，只能使用方法增删改数据或者将数组添加到对象中被包装，再通过reactive响应处理
 
+补充：`import { readonly } from "vue"`，readonly可以将reactive代理的对象变为只读，无法重新赋值，但是可被原始对象影响，原始对象更改也会readonly对象。
+补充：`import { shallowReactive } from "vue"`，shallowReactive也是响应式浅层的，只到第一层数据，也会被reactive影响，所以不能混用。
 
+Reactive源码reactive()函数中对参数做了泛型约束，只能传入引用类型的对象，会判断是否为只读，是则直接返回，
+否则就调用createReactiveObject()函数,判断参数类型（普通类型-直接返回、对象已经被代理过了-直接返回、缓存中找到-直接返回、白名单-直接返回），最后通过proxy代理
+```vue
+<script setup lang='ts'>
+import { ref,reactive,toRef,toRefs,toRaw } from 'vue'
+const tom = {name:"tom",age:28}
+const tomName = toRef(tom,"name") 
+// toRef 只能修改响应式对象的值，对非响应式视图毫无影响
+const changeTom = ()=>{
+  tomName.value = "jerry"
+  console.log(tom)
+}
 
+const jerry = reactive({name:"jerry",age:28}) 
+const JerryAge = toRef(jerry,"age")
+// 可以做到响应式更新
+const changeJerry = (obj)=>{
+  JerryAge.value = Math.floor(Math.random()*100)
+  console.log(jerry)
+}
 
+// 应用场景：toRef多作为函数参数传递，并做到响应式视图更新
+</script>
 
-
-
-
-
-
-
-## 第六章：
+<template>
+  <h1>{{ tom }}</h1>
+  <button @click="changeTom">change tom age</button>
+  <hr>
+  <h1>{{ jerry }}</h1>
+  <button @click="changeJerry">change jerry age</button>
+</template>
+```
+## 第七章：
 
