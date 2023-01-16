@@ -1,7 +1,7 @@
 # Vue3+vite+ts+pinia
 
 Vue核心 MVVM
-[廖学峰 MVVM](https://www.liaoxuefeng.com/wiki/1022910821149312/1108898947791072)
+[廖雪峰 MVVM](https://www.liaoxuefeng.com/wiki/1022910821149312/1108898947791072)
 
 ## 第一章：简介
 MVVM（Model-View-ViewModel）架构
@@ -478,7 +478,7 @@ Reactive包裹的数据是通过proxy代理的对象，不能被直接赋值，�
 补充：`import { readonly } from "vue"`，readonly可以将reactive代理的对象变为只读，无法重新赋值，但是可被原始对象影响，原始对象更改也会readonly对象。
 补充：`import { shallowReactive } from "vue"`，shallowReactive也是响应式浅层的，只到第一层数据，也会被reactive影响，所以不能混用。
 
-Reactive源码reactive()函数中对参数做了泛型约束，只能传入引用类型的对象，会判断是否为只读，是则直接返回，
+Reactive源码：reactive()函数中对参数做了泛型约束，只能传入引用类型的对象，会判断是否为只读，是则直接返回，
 否则就调用createReactiveObject()函数,判断参数类型（普通类型-直接返回、对象已经被代理过了-直接返回、缓存中找到-直接返回、白名单-直接返回），最后通过proxy代理
 ```vue
 <script setup lang='ts'>
@@ -510,5 +510,380 @@ const changeJerry = (obj)=>{
   <button @click="changeJerry">change jerry age</button>
 </template>
 ```
-## 第七章：
+
+## 第八章：ToRef、ToRefs、ToRaw
+
+ToRef应用场景：可以将对象的某个属性包装成为一个响应式对象提供给外部使用，而不用暴露整个对象。
+理解：相当于解构，但是解构出来的对象是响应式的
+```vue
+<script setup>
+import { ref, reactive,toRef } from 'vue'
+const person = reactive({name:"tom",age:18})
+let age = toRef(person,"age")
+let changeName = ()=>{
+  age.value = Math.floor(18+Math.random()*82)
+}
+</script>
+
+<template>
+  <div>{{ person }}</div>
+  <button @click="changeName">
+    change name
+  </button>
+</template>
+```
+toRefs源码
+```ts
+const toRefs =<T extends object>(object:T) => {
+    const map:any = {}
+    for (let key in object) {
+        map[key] = toRef(object.key)
+    }
+    return map
+}
+```
+toRefs适用于复杂对象外面包一层,然后再把对象结构出来：
+```vue
+<script setup>
+import { reactive,toRefs } from 'vue'
+const person = reactive({name:"tom",age:18})
+let {name,age} = toRefs(person)
+let changeName = ()=>{
+  age.value = Math.floor(18+Math.random()*82)
+  name.value = Math.random().toString(36).slice(2,)
+}
+</script>
+
+<template>
+  <div>{{ person }}</div>
+  <button @click="changeName">
+    change name
+  </button>
+</template>
+```
+toRaw应用场景：将一个对象脱离响应式包装，底层是通过 __v_raw 属性，此属性不会暴露给开发者。
+源码讲解[链接](https://www.bilibili.com/video/BV1dS4y1y7vd/?p=9&share_source=copy_web&vd_source=461186b903c28eeeb1342b31e0bfe68e&t=709)
+
+## 第八章番外：响应式原理 ⭐（以后补充）
+
+推荐阅读
+[Vue.js设计与实现-第二篇 Vue 响应系统]()、
+[Vue官网 深入响应式系统](https://cn.vuejs.org/guide/extras/reactivity-in-depth.html)、
+[小满视频版讲解](https://www.bilibili.com/video/BV1dS4y1y7vd/?p=10)
+
+### 实现 reactive
+```ts
+export const reactive = <T extends object>(object:T)=>{
+    return new Proxy(object,{
+        get(target: T, p: string | symbol, receiver: any): any {
+            // return target[key]
+            // 上面这种方式会出现问题，需要Reflect保证上下文的正确
+            return Reflect.get(target,p,receiver)
+        },
+        set(target: T, p: string | symbol, value: any, receiver: any): boolean {
+            // Reflect.set 会返回一个 boolean 值
+            return Reflect.set(target,p,value,receiver)
+        },
+        /*此外还有
+        * deleteProperty --- 删除
+        * ownKeys -- 遍历属性
+        * apply -- 拦截方法
+        * */
+    })
+}
+```
+### 实现 effect
+```js
+const user = reactive({name:"xxx",age:18})
+
+effect(()=>{
+    document.querySelector("#app").innerText = `${user.name}--${user.age}`
+})
+```
+```ts
+let activeEffect 
+export const effect = (fn:Function)=>{
+    // 闭包
+    const _effect = function (){
+        activeEffect = _effect
+        fn()
+    }
+    _effect()
+}
+
+// 依赖收集
+const targetMap = new weakMap()
+export const track = (target,key)=>{
+    let depsMap = targetMap.get(target)
+    if(!depsMap) {
+        depsMap = new Map()
+        targetMap.set(target,depsMap)
+    }
+}
+```
+
+## 第九章 computed计算属性
+基本使用：
+```vue
+<script setup>
+import { ref,computed } from 'vue'
+const firstName = ref("a")
+const lastName= ref("b")
+// 函数写法
+const name = computed(()=>{
+  return firstName.value+'----'+lastName.value
+})
+
+// 对象写法
+const all = computed({
+  get(){
+    return `${firstName.value}---${ lastName.value}`
+	},
+  set(newVal){
+    return firstName.value+'----'+lastName.value
+  },
+})
+</script>
+
+<template>
+  <div>{{ name }}</div>
+  <div>{{ all }}</div>
+  <input v-model="firstName" />
+  <input v-model="lastName" />
+</template>
+```
+记账本案例:
+```vue
+<script setup lang="ts">
+import { ref,computed,reactive } from 'vue'
+let list = reactive([
+  {name:"烟",number:10,price:1},
+  {name:"酒",number:13,price:2},
+  {name:"糖",number:41,price:10},
+  {name:"茶",number:186,price:100},
+])
+
+const inorde = (item:object,type:Boolean)=>{
+  if(type) {
+    item.number++
+  }else {
+    item.number--
+  }
+}
+const remove = (index:number)=>{
+  list.splice(index,1)
+}
+let $price = computed(()=>{
+  return list.reduce((val,item)=>{return val+(item.price*item.number)},0)
+})
+
+</script>
+
+<template>
+  <table>
+    <tr>
+    	<td>商品</td>
+    	<td>小计</td>
+    	<td>数量</td>
+      <td>删除</td>
+    </tr>
+  	<tr v-for="(item,index) in list" :key="index">
+    	<td>{{item.name}}</td>
+    	<td>{{item.number*item.price}}</td>
+    	<td>
+        <button @click="inorde(item,false)">-</button>
+        {{item.number}}
+        <button @click="inorde(item,true)">+</button>
+      </td>
+      <td><button @click="remove(index)">删除</button></td>
+    </tr>
+     <tr>
+    	<td></td>
+    	<td></td>
+    	<td>总价:{{$price}}</td>
+    </tr>
+  </table>
+</template>
+```
+
+## 第十章 watch 侦听属性
+```vue
+<script setup lang="ts">
+import { ref,watch,reactive } from 'vue'
+
+let msg = ref("hello")
+let msg1 = ref("hello")
+// 为单个属性添加侦听器
+watch(msg,(newVal,oldVal)=>{
+  console.log(newVal,oldVal)
+})
+// 为多个属性添加侦听器（数组形式）
+watch([msg,msg1],(newVal,oldVal)=>{
+  console.log(newVal,oldVal)
+})
+</script>
+
+<template>
+  <input type="text" v-model="msg"/>
+  {{msg}}
+  <hr />
+  <input type="text" v-model="msg1"/>
+  {{msg1}}
+</template>
+```
+深度监视，需要注意newVal和oldVal是相同的，后面会解释（源码job之后，新旧值是直接=赋值）
+```vue
+<script setup lang="ts">
+import { ref,watch,reactive } from 'vue'
+let data = ref({
+  foo:{
+    name:"tom",
+    age:18
+  }
+})
+// 深度监视
+watch(data,(newVal,oldVal)=>{
+  // newVal和oldVal 是相同的！！！
+  console.log(newVal,oldVal)
+},{
+  // active 底层已经做了deep:true,可以不开启
+  deep:true,
+  immediate:true,
+  flush:"pre",// pre 组件更新之前执行; async 同步执行; post 组件更新之后执行
+})
+</script>
+
+<template>
+  <input v-model="data.foo.name"/>
+  <input v-model="data.foo.age"/>
+</template>
+```
+监视对象属性
+```vue
+<script setup lang="ts">
+import { watch,reactive } from 'vue'
+let data = reactive({
+  foo:{
+      name:"tom",
+      age:18
+  }
+})
+// 监视单一属性官方推荐使用函数返回
+watch(()=>data.foo.name,(newVal,oldVal)=>{
+  // newVal和oldVal 是相同的！！！
+  console.log(newVal,oldVal)
+})
+</script>
+
+<template>
+  <input v-model="data.foo.name"/>
+  <input v-model="data.foo.age"/>
+</template>
+```
+源码讲解[链接](https://www.bilibili.com/video/BV1dS4y1y7vd/?p=12&share_source=copy_web&vd_source=461186b903c28eeeb1342b31e0bfe68e&t=409)
+
+watch底层调用了doWatch(source,cb,option),doWatch会做以下几件事
+格式化 source，（ref、reactive、array、function），格式化后赋值给了getter函数
+ref-->取value赋值给getter
+reactive-->traverse（递归）
+函数就进行加工-->赋值给 getter，并判断有没有cb，有就执行watch，没有就执行watch effect
+如果cb和deep开启了，就进行traverse（递归）深度监听
+...
+
+## watchEffect 高级侦听器
+```vue
+<script setup lang="ts">
+import { ref,watch,reactive,watchEffect } from 'vue'
+let data = ref({
+  foo:{
+      name:"tom",
+      age:18
+  }
+})
+// watchEffect会返回一个停止函数
+const stop = watchEffect((oninvalidate)=>{
+  console.log("data---",data)
+  // oninvalidate 会在更新前被调用
+  oninvalidate(()=>{
+    console.log("before")
+  })
+},{
+  // 可以有更多配置项
+  flush:"post", // 侦听时机
+  // 提供了一个调试函数
+  onTrigger(e) {
+    debugger
+  }
+})
+</script>
+
+<template>
+	<input v-model="data.foo.name"/>
+  <input v-model="data.foo.age"/>
+  <button @click="stop">停止监听</button>
+</template>
+```
+
+nextTick是异步的，生命周期都是同步的，nextTick执行的时候生命周期早就执行过一遍了
+使用v-show并不会销毁组件，v-show是样式的隐藏，v-if 却是重新渲染
+
+## 生命周期
+```vue
+<script setup lang="ts">
+	import { ref,onBeforeMount,onMounted,onBeforeUpdate,onUpdated,onBeforeUnmount,onUnmounted,onRenderTracked,onRenderTriggered} from 'vue'
+  
+  // 1. setup 语法糖模式中，beforeCreate created 被屏蔽了(setup替代了)
+  console.log("setup")
+  
+  // 2. 创建前
+  onBeforeMount(()=>{
+    console.log("创建之前")
+  })
+  // 3. 创建后
+  onMounted(()=>{
+    console.log("创建之后")
+  })
+  // 4.更新前
+  onBeforeUpdate(()=>{
+    console.log("更新之前")
+  })
+  // 5.更新后
+  onUpdated(()=>{
+    console.log("更新之后")
+  }) 
+  // 6. 卸载前
+  onBeforeUnmount(()=>{
+    console.log("卸载前")
+  })
+  // 7. 卸载前
+  onUnmounted(()=>{
+    console.log("卸载后")
+  })
+  // 8.两个特殊钩子
+  // 收集依赖钩子
+  onRenderTracked((e)=>{
+    
+  })
+  // 触发依赖钩子
+  onRenderTriggered((e)=>{
+    
+  })
+  const msg = ref("张三")
+  const change = ()=>{
+    msg.value = "李四篡位"
+  }
+  let currnt = true
+</script>
+<Comp/>	
+<template>
+	<div>
+    {{msg}}
+  </div>
+  <button @click="change">
+    change
+  </button>
+</template>
+```
+讲解声明周期[链接](https://www.bilibili.com/video/BV1dS4y1y7vd/?p=14&share_source=copy_web&vd_source=461186b903c28eeeb1342b31e0bfe68e&t=665)
+
 
