@@ -1155,6 +1155,7 @@ js实现思路：利用绝对定位，计算每张图片的top、left，先放�
 import Card from "../../components/expame/Card.vue"
 </script>
 ```
+### 全局组件
 全局组件需要在main.js文件中注册，才能在此项目所有组件中使用：
 ```js
 import { createApp } from 'vue'
@@ -1167,11 +1168,166 @@ import Card from './components/expame/Card.vue'
 createApp(App).component('Card',Card).mount('#app')
 ```
 批量注册全局组件可以借鉴[element的循环注册](https://element-plus.org/zh-CN/component/icon.html#%E6%B3%A8%E5%86%8C%E6%89%80%E6%9C%89%E5%9B%BE%E6%A0%87)的方式
+### 递归组件
+见如下，直接使用组件名递归（方式1）
+```vue
+<template>
+<div v-for="item in data" class="tree">
+  <input type="checkbox" :checked="item.checked"> <span>{{item.name}}</span>
+  <!-- 直接使用组件名当递归组件的名称 -->
+  <Tree v-if="item?.children?.length" :data="item?.children"></Tree>
+</div>
+</template>
+
+<script setup lang="ts">
+interface Tree {
+  name:String,
+  checked:boolean,
+  children?:Tree[]
+}
+
+defineProps<{
+  data:Tree[]
+}>()
+</script>
+
+<style scoped>
+.tree {
+  margin-left: 10px;
+}
+</style>
+```
+使用script标签递归（方式2）
+```vue
+<template>
+<div v-for="item in data" class="tree">
+  <input type="checkbox" :checked="item.checked"> <span>{{item.name}}</span>
+  <MyTreeVue v-if="item?.children?.length" :data="item?.children"></MyTreeVue>
+</div>
+</template>
+
+<script setup lang="ts">
+import {ref} from 'vue'
+interface Tree {
+  name:String,
+  checked:boolean,
+  children?:Tree[]
+}
+
+defineProps<{
+  data:Tree[]
+}>()
+</script>
+
+<!-- vue支持再写一个script标签在递归组件中重命名当前组件 -->
+<script lang="ts">
+export default  {
+  name: "MyTreeVue"
+}
+</script>
+
+<style scoped>
+.tree {
+  margin-left: 10px;
+}
+</style>
+```
+使用第三方依赖（方式3）
+[unplugin-vue-define-options](https://www.npmjs.com/package/unplugin-vue-define-options)
+
+递归组件添加事件,注意阻止事件冒泡和使用$event传递事件源
+```vue
+<template>
+<div v-for="item in data" class="tree">
+  <input type="checkbox" :checked="item.checked" @click.stop="clickTap(item,$event)"> <span>{{item.name}}</span>
+  <Tree v-if="item?.children?.length" :data="item?.children"></Tree>
+</div>
+</template>
+
+<script setup lang="ts">
+// ...
+const clickTap = (item:Tree,e:HTMLInputElement)=>{
+  console.log(item,e)
+}
+</script>
+
+<style scoped>
+.tree {
+  margin-left: 10px;
+}
+</style>
+```
+
+## 第十六章 动态组件
+多个组件使用同一个挂载点，并做到动态切换,下面是一个简单天气组件table切换的案例
+```vue
+<template>
+  <div class="weather">
+    <header>
+      <div @click="switchCom(item,index)" :class="[active==index?'active':'']" v-for="(item,index) in data" :key="index">{{item.name}}</div>
+    </header>
+    <section>
+       <component :is="comId"></component>
+    </section>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref,reactive } from "vue"
+import TodayVue from "./Today.vue"
+import TomorrowVue from "./Tomorrow.vue"
 
 
+let comId = ref(TodayVue)
+let active = ref(0)
 
+const data = reactive([
+  {
+    name:"今天",
+    com:TodayVue
+  },{
+    name:"明天",
+    com:TomorrowVue
+  },
+])
 
+let switchCom = (item:any,index:number)=>{
+  comId.value = item.com
+  active.value = index
+}
+</script>
 
-
+<style scoped lang="less">
+@border:#ccc;
+.weather {
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+  height: 200px;
+  border: 1px solid @border;
+  border-radius: 8px;
+  padding:5px;
+  box-shadow: #cccccc 1px 1px;
+  cursor: pointer;
+  header {
+    display: flex;
+    justify-content: space-around;
+    border-bottom: 1px solid @border;
+  }
+  section {
+    flex: 1 1 auto;
+    padding: 5px 2px ;
+  }
+}
+.active {
+  background-color: #ADC181;
+  color: #3B2121;
+}
+</style>
+```
+注意，如果按照上面的做了依然会出现警告，这是因为ref对组件内部也做了proxy代理，这是不必要的，带来了性能浪费。因此需要shallowRef或者Raw
+```js
+import {shallowRef} from 'vue'
+```
 
 
