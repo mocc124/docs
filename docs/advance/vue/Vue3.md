@@ -445,13 +445,15 @@ ref返回了一个 ES6 类，他有一个属性value。在取值或者修改时�
 ref也可以被用来获取dom元素,如下：
 ```vue
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref,onMounted } from 'vue'
 
 const msg = ref('Hello World!')
 
 const strBox = ref<HTMLDivElement>() // 常量名和标签属性需保持一致
 
-setTimeout(()=>{console.log(strBox.value?.innerText)},1000)
+onMounted(()=>{
+  console.log(strBox.value?.innerText)
+})
 
 </script>
 
@@ -467,7 +469,6 @@ RefImpl类接受两个属性(value,isShallow),它的私有属性_value就是将�
 
 
 ref和shallowRef写一块会影响视图更新，因为triggerRef可以强制更新shallowRef的值，Ref和triggerRef底层都是调用triggerRefValue，triggerRefValue又会调用triggerEffects更新依赖，所以会一块将shallowRef的依赖也更新。
-
 
 ## 第七章 Reactive
 ref和Reactive区别1：ref支持所有类型，reactive只支持引用类型（Arr、Object、Map、Set）
@@ -570,6 +571,31 @@ toRaw应用场景：将一个对象脱离响应式包装，底层是通过 __v_r
 [Vue.js设计与实现-第二篇 Vue 响应系统]()、
 [Vue官网 深入响应式系统](https://cn.vuejs.org/guide/extras/reactivity-in-depth.html)、
 [小满视频版讲解](https://www.bilibili.com/video/BV1dS4y1y7vd/?p=10)
+
+基本原理:创建了一个用于存储副作用函数的桶，接着通过proxy代理对象，并设置getter和setter，getter中将副作用函数添加到桶中和setter中拿出副作用桶中的函数执行。
+```js
+let bucket = new Set()
+
+let data = {msg:"hello"}
+
+data = new Proxy(data,{
+    // 拦截读取
+    get(target,key){
+        // 将副作用函数 effect 添加到存储副作用函数的桶中
+        bucket.add(effect)
+        // 返回属性值
+        return data[key]
+    },
+    // 拦截设置
+    set(target,key,value) {
+        target[key] = value
+        // 把副作用函数从桶里取出并执行
+        bucket.forEach(fn=>fn())
+        // 返回 true 代表设置操作成功
+        return true
+    }
+})
+```
 
 ### 实现 reactive
 ```ts
@@ -790,7 +816,7 @@ reactive-->traverse（递归）
 如果cb和deep开启了，就进行traverse（递归）深度监听
 ...
 
-## watchEffect 高级侦听器
+## 第十一章 watchEffect 高级侦听器
 ```vue
 <script setup lang="ts">
 import { ref,watch,reactive,watchEffect } from 'vue'
@@ -827,7 +853,7 @@ const stop = watchEffect((oninvalidate)=>{
 nextTick是异步的，生命周期都是同步的，nextTick执行的时候生命周期早就执行过一遍了
 使用v-show并不会销毁组件，v-show是样式的隐藏，v-if 却是重新渲染
 
-## 生命周期
+## 第十二章 生命周期
 ```vue
 <script setup lang="ts">
 	import { ref,onBeforeMount,onMounted,onBeforeUpdate,onUpdated,onBeforeUnmount,onUnmounted,onRenderTracked,onRenderTriggered} from 'vue'
@@ -859,15 +885,11 @@ nextTick是异步的，生命周期都是同步的，nextTick执行的时候生�
   onUnmounted(()=>{
     console.log("卸载后")
   })
-  // 8.两个特殊钩子
-  // 收集依赖钩子
-  onRenderTracked((e)=>{
-    
-  })
-  // 触发依赖钩子
-  onRenderTriggered((e)=>{
-    
-  })
+  // 两个特殊钩子
+  // 8. 收集依赖钩子
+  onRenderTracked((e)=>{})
+  // 9. 触发依赖钩子
+  onRenderTriggered((e)=>{})
   const msg = ref("张三")
   const change = ()=>{
     msg.value = "李四篡位"
@@ -885,5 +907,271 @@ nextTick是异步的，生命周期都是同步的，nextTick执行的时候生�
 </template>
 ```
 讲解声明周期[链接](https://www.bilibili.com/video/BV1dS4y1y7vd/?p=14&share_source=copy_web&vd_source=461186b903c28eeeb1342b31e0bfe68e&t=665)
+
+## 第十三章 实操组件和认识 less、scoped
+
+文件结构：
+Layout
+Content -- index.vue
+Header -- index.vue
+Menu -- index.vue
+index.vue
+实现经典两栏后台管理系统框架，文件结构如上
+
+[less 官网](https://less.bootcss.com/)
+注意：使用vite构建的项目，不需要安装 less-loader，
+最常用的语法:
+```html
+<div class="content">
+    <div class="content-item"></div>
+</div>
+```
+```less
+.content {
+  display: flex;
+  flex-direction: column;
+  &-item {
+    width: 100%;
+    height: 100%;
+  }
+}
+```
+
+scoped 可以实现样式隔离，底层会给元素添加data-v-xxx的属性，此属性不会重复,css样式会添加属性选择器，保证样式的唯一。
+
+## 第十四章 父子组件传参
+### 父传子（defineProps）
+index.vue 父组件传递参数
+```vue
+<template>
+    <Menu :menuList="menuData"></Menu>
+</template>
+
+<script setup lang="ts">
+import Menu from  "./Menu/index.vue"
+
+const menuData = [
+  {name:"统计概况",code:Math.random().toString(36).slice(2,)},
+  {name:"标准库",code:Math.random().toString(36).slice(2,)},
+  {name:"我的项目",code:Math.random().toString(36).slice(2,)},
+  {name:"系统环境",code:Math.random().toString(36).slice(2,)},
+]
+</script>
+```
+Menu 子组件接收参数（js形式）
+```vue
+<template>
+  <ul>
+    <li v-for="item in menuList" :key="item.code">
+      {{item.name}}
+    </li>
+  </ul>
+</template>
+
+<script setup lang="ts">
+const props = defineProps({
+  menuList:{
+    type:Array,
+    default:[{name:"关于我",value:"1"}]
+  }
+})
+
+// 模板语法中可以直接使用，js中使用需要接收defineProps返回值.的形式
+console.log(props.menuList)
+</script>
+```
+Menu 子组件接收参数（ts泛型字面量模式更加简单）
+```vue
+<template>
+  <div class="menu">
+    <div class="log">XXX log</div>
+    <ul>
+      <li v-for="item in menuList" :key="item.code">
+        {{item.name}}
+      </li>
+    </ul>
+  </div>
+</template>
+
+<script setup lang="ts">
+// ts形式（无默认值）
+// let props = defineProps<{menuList:object[]}>()
+// console.log(props.menuList)
+
+// ts形式（有默认值）,需要使用ts特有的withDefaults设置默认值
+let props = withDefaults( defineProps<{title: string,menuList:object[]}>(),{
+  title:"xxx Log",
+  // 对于复杂类型默认值推荐使用函数返回值
+  menuList:()=>[{name:"默认",code:Math.random().toString(36).slice(2,)}]
+})
+console.log(props.title)
+</script>
+```
+
+### 子传父（defineEmits）
+Menu 子组件传递参数（js形式）
+```vue
+<template>
+<div class="menu">
+  <div class="log">
+    {{title}}
+  </div>
+  <ul>
+    <li v-for="item in menuList" :key="item.code" @click="send(item.code)">
+      {{item.name}}
+    </li>
+  </ul>
+</div>
+</template>
+
+<script setup lang="ts">
+// 接收父组件参数
+let props = withDefaults( defineProps<{title: string,menuList:object[]}>(),{
+  title:"xxx Log",
+  menuList:()=>[{name:"默认",code:Math.random().toString(36).slice(2,)}]
+})
+
+const emits = defineEmits(['on-click'])
+// 子组件传值给父组件
+const send = (code:string)=>{
+  // 这里参数可以传多个，第一个不能省略
+  emits("on-click",code,"menu")
+}
+</script>
+```
+父组件接收参数
+```vue
+<template>
+  <div class="layout">
+    <Menu :menuList="menuData" @on-click="getCode"></Menu>
+    <div class="layout-right">
+      <Header ></Header>
+      <Content></Content>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import Menu from  "./Menu/index.vue"
+
+const menuData = [
+  {name:"统计概况",code:Math.random().toString(36).slice(2,)},
+  {name:"标准库",code:Math.random().toString(36).slice(2,)},
+  {name:"我的项目",code:Math.random().toString(36).slice(2,)},
+  {name:"系统环境",code:Math.random().toString(36).slice(2,)},
+]
+
+// 接收子组件参数
+const getCode = (...data:any)=>{
+  console.log(data)
+}
+</script>
+```
+Menu 子组件传递参数（ts形式）
+```vue
+<template>
+<div class="menu">
+  <div class="log">
+    {{title}}
+  </div>
+  <ul>
+    <li v-for="item in menuList" :key="item.code" @click="send(item.code)">
+      {{item.name}}
+    </li>
+  </ul>
+</div>
+</template>
+
+<script setup lang="ts">
+
+// 接收父组件参数
+let props = withDefaults( defineProps<{title: string,menuList:object[]}>(),{
+  title:"xxx Log",
+  menuList:()=>[{name:"默认",code:Math.random().toString(36).slice(2,)}]
+})
+
+// 子组件传值给父组件（ts形式）
+const emit = defineEmits<{
+  (e:"on-click",code:string):void
+}>()
+
+let send = (code:string)=>{
+  emit("on-click",code)
+}
+</script>
+```
+
+### defineExpose 暴露子组件属性或方法
+子组件暴露属性/方法
+```vue
+<script setup lang="ts">
+// 3.1 暴露一些子组件的属性或方法给父组件
+defineExpose({
+  name:"this is menu",
+  open:(...current:any)=>{console.log(current.shift())}
+})
+</script>
+```
+父组件接收属性并调用方法
+```vue
+<template>
+  <div class="layout">
+    <Menu ref="menuCom" :menuList="menuData" @on-click="getCode"></Menu>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref,onMounted } from 'vue'
+import Menu from  "./Menu/index.vue"
+
+const menuTitle = "xxx LOG"
+
+// 接收子组件暴露的属性和方法
+const menuCom = ref<InstanceType<typeof Menu>>()
+
+onMounted(()=>{
+  // 访问值
+  console.log(menuCom.value?.name)
+  // 调用方法
+  menuCom.value.open(1,2,3)
+})
+</script>
+```
+应用场景:element 的from组件用到了defineExpose传递参数
+
+案例 [封装一个瀑布流插件]()
+js实现思路：利用绝对定位，计算每张图片的top、left，先放置第一列数据，并将第一列的高度为维护一个数组，循环在最低高度添加下一张图片。
+
+## 第十五章 全局组件、递归组件和局部组件
+在Vue3中组件是开箱即用的，不需要项vue2一样注册，import引入即可使用。
+```vue
+<template>
+<div class="content">
+  <Card></Card>
+</div>
+</template>
+
+<script setup lang="ts">
+import Card from "../../components/expame/Card.vue"
+</script>
+```
+全局组件需要在main.js文件中注册，才能在此项目所有组件中使用：
+```js
+import { createApp } from 'vue'
+import './style.css'
+import App from './App.vue'
+// 引入全局组件
+import Card from './components/expame/Card.vue'
+
+// 链式调用 注册全局组件并挂载
+createApp(App).component('Card',Card).mount('#app')
+```
+批量注册全局组件可以借鉴[element的循环注册](https://element-plus.org/zh-CN/component/icon.html#%E6%B3%A8%E5%86%8C%E6%89%80%E6%9C%89%E5%9B%BE%E6%A0%87)的方式
+
+
+
+
+
+
 
 
