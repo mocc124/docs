@@ -1325,9 +1325,68 @@ let switchCom = (item:any,index:number)=>{
 }
 </style>
 ```
-注意，如果按照上面的做了依然会出现警告，这是因为ref对组件内部也做了proxy代理，这是不必要的，带来了性能浪费。因此需要shallowRef或者Raw
+注意，如果按照上面的做了依然会出现警告，这是因为ref对组件内部也做了proxy代理，这是不必要的，带来了性能浪费。
+因此需要shallowRef（代理外面一层）或markRaw（添加__skip__属性，reactive碰到此属性会跳过proxy代理）
 ```js
-import {shallowRef} from 'vue'
+import { shallowRef,markRaw } from 'vue'
+
+let comId = shallowRef(TodayVue)
+
+const data = reactive([
+    {
+        name:"今天",
+        com:markRaw(TodayVue)
+    },{
+        name:"明天",
+        com:markRaw(TomorrowVue)
+    },
+])
+
+// ...
 ```
+第二种方式：类似于 vue2 的书写风格
+```js
+import AVue from "./Avue.vue"
+import BVue from "./Bvue.vue"
+
+const data = reactive([
+    {
+        name:"今天",
+        com:"AVue" // 字符串形式
+    },{
+        name:"明天",
+        com:"BVue"
+    },
+])
+
+// 类似于Vue2 需要注册
+components:{
+    AVue, BVue
+}
+```
+
+源码解析：
+
+component底层会调用_resolveDynamicComponent(component)函数进行动态切换。
+
+_resolveDynamicComponent(component)首先会判断参数是否为string类型，是则调用 resolveAsset，对象类型则直接返回（性能更高）
+
+resolveAsset函数会判断当前type（optionsAPI还是CompositionApi）去做区分--->通过resolve()进行注册,返回一个res（当前要切换的组件）
+
+## 第十七章 插槽slot
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
