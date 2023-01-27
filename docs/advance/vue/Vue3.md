@@ -63,7 +63,7 @@ Vue3 中可以由多个根标签，底层原理时给这些增加了一个虚拟
 主要原因是Vue实例在项目中是单例的，捆绑程序无法检测到该对象的哪些属性在代码中被使用到
 
 ### Vue 3 Composition Api
-Setup 语法糖式编程 
+新增了setup函数和Setup 语法糖模式 
 
 ## 第二章：环境配置
 
@@ -140,18 +140,6 @@ Libuv：跨平台的异步 IO 库，但它提供的功能不仅仅是 IO，还�
 ![Node.js 架构](https://img-blog.csdnimg.cn/d3718cc40bd74ad884adb38d07a5b0cb.png)
 
 核心：[Libuv](https://github.com/libuv/libuv)
-src/unix/core.c un_run()函数中，
-将loop（事件结构循环的结构体）提交到alive中注册任务，如果没有任务就推出，
-有任务执行while循环，反复执行event loop的队列
-
-uv_update_time 和 uv_run_time 是执行计时器（steTimeout和setInterval）的event loop（底层是链表加二叉堆），为了区分两种计时器，会有一个repeat判断
-过期就会被结束，
-
-uv_run_pending 处理产生fs、IO流等的回调
-
-uv_io_poll 队列处理网络、信号、线程池
-
-uv_run_closing_handles 处理关闭服务器的event loop操作
 
 ## 第三章：目录文件结构、FS和VS Code插件
 文件结构
@@ -174,49 +162,45 @@ SFC（单文件组件），
 VS Code插件推荐：
 `Vue language Features(volar)`（与vue2的`vetur`冲突）和`TypeScript Vue Plugin(volar)`
 
-npm run dev的全过程：
+npm run dev命令执行的过程：
 npm run dev ---> package.json/scripts/dev ---> vite ---> bin（软链接）-->node modules/.bin/vite（跨平台兼容） --> npm install -g（全局包）--> 环境变量 --> Error
 
 ## 第四章：模板语法和 vue 指令
-三种书写风格：
-一、Vue3 依然支持 Vue2 option API 的书写风格：
-```vue
-<script >
-export default  {
-  data() {
-    return {}
-  },
-  methods:{
-    xx() {}
-  }
-}
-</script>
-```
-二、setup 函数模式（定义的变量、函数必须手动return出去）
-```vue
-<script >
-export default  {
-  setup() {
-    const a = 1; 
-    return {
-      a // setup返回变量a，就可以在模板中直接使用
+### script的三种书写风格：
+1. Vue3 依然支持 Vue2 option API 的书写风格：
+    ```vue
+    <script >
+    export default  {
+      data() { return {} },
+      methods:{ fun() {} }
     }
-  }
-}
-</script>
-```
-三、setup 语法糖模式
-```vue
-<script setup lang="ts">
-  const a:number = 1;
-</script>
-```
-
-模板语法支持简单运算、三元表达、API方法等，如下
+    </script>
+    ```
+2. setup 函数模式（注意：局部变量、函数必须return，才能被模板字符串解析）
+    ```vue
+    <script >
+    export default  {
+      setup() {
+        const a = 1; 
+        return {
+          a // setup返回变量a，就可以在模板中直接使用
+        }
+      }
+    }
+    </script>
+    ```
+3. setup 语法糖模式（不用手动return）
+    ```vue
+    <script setup lang="ts">
+      const a:number = 1;
+    </script>
+    ```
+### 模板语法
+模板语法支持简单运算、三元表达、API方法等，示例如下
 ```vue
 <template>
   <div class="container">
-    {{ arr.reduce((a,b)=>{return a+b},1) }}
+    {{ arr.reduce((a,b)=> a+b,0) }}
   </div>
 </template>
 <script setup lang="ts">
@@ -224,35 +208,8 @@ export default  {
 </script>
 ```
 
-Vue指令
-v-text: ，与{{}}效果相似，
-v-html: ，可以解析html标签，不支持组件
-
-v-if: ，容器的显示隐藏,将元素变为注释节点，直接控制dom
-v-else-if: ，...
-v-else: ，...
-v-show: ，容器的显示隐藏，比v-if性能更高，只是控制样式display:none
- 
-v-on: ， 绑定事件，语法糖使用@替换v-on:，动态事件`@[event]='xxx'`
-内置修饰符：
-.stop - 阻止冒泡事件
-其它指令见[官网文档 v-on](https://cn.vuejs.org/api/built-in-directives.html#v-on)
-```vue
-<template>
-  <div class="container">
-    <div @click="click">
-      <button @[event].stop="click"></button>
-    </div>
-  </div>
-</template>
-
-<script setup lang="ts">
-const event = "click";
-const click = function () {/* ... */}
-</script>
-```
-
-v-bind: ，绑定元素prop、style、class，语法糖:使用:替换v-bind:
+### Vue指令
+v-bind: ，绑定元素prop、style、class，语法糖可以使用:替换v-bind:
 ```vue
 <template>
   <div class="container">
@@ -293,7 +250,7 @@ v-model: ，双向绑定
 const input:string = "请输入"
 </script>
 ```
-上面是实现不了双向绑定的，只有使用ref或reactive所包裹起来的值才是响应式的
+注意：只有使用ref或reactive所包裹起来的值才是响应式的。
 ```vue
 <script setup lang="ts">
 import {ref} from "vue"
@@ -313,48 +270,32 @@ const arr:string[] = ["a","b","c"]
 </script>
 ```
 
-v-once，添加了此属性的元素只会被渲染一次
-v-memo，Vue3.2新增的内置指令，类似与v-once，大致的作用就是小幅度手动提升一部分性能，一般是配合v-for使，[Vue3.2 新增 v-memo](https://juejin.cn/post/7180973915580137527)
+- v-once，添加了此属性的元素只会被渲染一次
+- v-memo，Vue3.2新增的内置指令，类似与v-once，大致的作用就是小幅度手动提升一部分性能，一般是配合v-for使，[Vue3.2 新增 v-memo](https://juejin.cn/post/7180973915580137527)
+
+- v-text: ，与{{}}效果相似，
+- v-html: ，可以解析html标签，不支持组件
+
+- v-if: ，容器的显示隐藏,将元素变为注释节点，直接控制dom
+- v-else-if: ，...
+- v-else: ，...
+- v-show: ，容器的显示隐藏，比v-if性能更高，只是控制样式display:none
+
+- v-on: ， 绑定事件，语法糖使用@替换v-on:，动态事件`@[event]='xxx'`
+  内置修饰符：
+- .stop - 阻止冒泡事件
+- 更多其它指令见[官网文档 v-on](https://cn.vuejs.org/api/built-in-directives.html#v-on)
 
 ## 第五章：虚拟dom和diff算法
-学习源码可以了解更好的api算法和代码逻辑，可以在开发环境中快速定位问题。而且面试会问这些。
 
-虚拟DOM，就是通过js生成的一个AST抽象语法树，这种思路在TS转JS、babel插件中ES6转ES5的过程中，甚至V8引擎在js解析为字节码的过程中也会进行AST转换，被证明是可行的。
+虚拟DOM：就是通过js生成的一个AST抽象语法树，这种思路在TS转JS、babel插件中ES6转ES5的过程中，甚至V8引擎在js解析为字节码的过程中也会进行AST转换。
 
-AST在线解析:[Vue 3 Template Explorer](https://template-explorer.vuejs.org/#eyJzcmMiOiI8ZGl2IGNsYXNzPVwiY29udGFpbmVyXCI+XHJcbiAgPGRpdiBjbGFzcz1cIm1haW5cIj48L2Rpdj5cclxuICA8ZGl2IGNsYXNzPVwiZm9vdGVyXCI+PC9kaXY+XHJcbjwvZGl2PiIsIm9wdGlvbnMiOnt9fQ==)
+Vue3 AST在线解析:[Vue 3 Template Explorer](https://template-explorer.vuejs.org/)，通过这个网址我们可以看到，使用js描述Dom对象，这种方式不仅方便且节省性能，还可以进行算法优化和节点复用。 
 
-通过上面的网址我们可以看到，使用js描述Dom对象是方便且节省性能的，还可以做一些算法优化和节点复用。 
-diff算法（源码在Vue/Core/render.ts 1631 line）最显著可以在v-for的key属性被感知。
-
-有key的diff算法：
-Vue3 ：前序算法（检查C1、C2的type/key是否相同；不相同，就break）
---->尾序算法（检查C1、C2的type/key是否相同；不相同，就break）
---> patch,对多出来的元素进行新增节点 
----> unmount,对少的元素进行删除
----> 针对特殊的乱序情况，会有最长递增子序列的算法（建立映射关系-建立新在旧节点的位置（有多余的旧节点或新节点不在旧节点中就卸载掉）-乱序清况，就求最长递增子序列算法底层是贪心+二分查找）
---> 当前遍历节点不在子序列，就移动，在子序列就直接跳过。
-
-无key的diff算法：通过for循环重新patch，渲染这个元素-->删除-->新增
-
-![Vue3 diff算法](https://img-blog.csdnimg.cn/1fe57a274d8644bfacf44526e79d57bc.png)
-
-补充：Vue2采用的是双端diff算法（头尾分别比较，然后头尾交叉比较），注意V3只做了头尾比较，省略了交叉比较这一步，优化了v2的diff算法。
+⭐ diff算法源码讲解：[diff算法](https://www.bilibili.com/video/BV1dS4y1y7vd/?p=6&share_source=copy_web&vd_source=461186b903c28eeeb1342b31e0bfe68e&t=216)
 
 ## 第六章 Ref
-
-回顾一下Vue2的响应式原理：
-```vue
-<script >
-export  default  {
-  data(){
-    return {
-      // ...
-    }
-  }
-}
-</script>
-```
-在Vue3中，所有被ref或者reactive系列包裹的值才可以做到响应式。
+Vue2中通过data函数返回对象实现响应式数据，在Vue3中，只有被 ref 或者 reactive 系列包裹的值才可以做到响应式。
 ```vue
 <template>
   <div>{{data.arr}}</div>
@@ -367,13 +308,16 @@ type D = {
   type:string,
   arr:number[]
 }
-let data= ref<D>({type:"xxx",arr:[1,2,3]})// 泛型的方式，类型简单
+let data = ref<D>({type:"xxx",arr:[1,2,3]})// 泛型的方式，简单类型
 let click = function () {
-  data.value.arr.push(Math.floor(Math.random()*10))
+  // js中通过.value读写值
+  data.value.arr.push(10)
 }
 </script>
 ```
-复杂类型推荐使用 Ref，如下：
+ref会返回了一个 ES6 类，他有一个属性value。在取值或者修改时，必须加 .value 的形式读写值。
+
+复杂类型推荐使用 Ref（首字母大写），如下：
 ```vue
 <template>
   <div>{{data.arr}}</div>
@@ -387,153 +331,122 @@ type D = {
   type:string,
   arr:number[]
 }
-let data:Ref<D>= ref({type:"xxx",arr:[1,2,3]}) // interface 类型复杂
+let data:Ref<D>= ref({type:"xxx",arr:[1,2,3]}) // interface 复杂类型
 let click = function () {
   data.value.arr.push(Math.floor(Math.random()*10))
 }
 </script>
 ```
-ref返回了一个 ES6 类，他有一个属性value。在取值或者修改时，必须加.value（固定语法）
-`import type { isRef } from 'vue'`可以判断是否为ref对象
-`import type { shallowRef } from 'vue'`只能做浅层响应，只到.value层级
-`import type { triggerRef } from 'vue'`强制更新收集的依赖，ref底层会调用这个triggerRef
 
-注意：shallowRef和ref不能混用，ref更新时会导致shallowRef的视图也更新（因为ref底层更新是会调用triggerRef，会强制更新收集的依赖）。
-
-`import type { customRef } from 'vue'`可以创建一个自定义的 ref，并对其依赖项跟踪和更新触发进行显式控制。
-```vue
-<template>
-  <div>{{obj}}</div>
-  <button @click="click">click</button>
-</template>
-
-<script setup lang='ts'>
-  import { customRef } from 'vue'
-  function myRef<T>(value:T) {
-    return customRef((track,triger)=>{
-      let timer:any 
-      return {
-        get(){
-          track()// 收集依赖
-          return value
-        },
-        set(newVal){
-          clearTimeout(timer);
-          timer = setTimeout(()=>{
-            value = newVal;
-            clearTimeout(timer);
-            triger() // 触发依赖
-          },500)
-        },
+其它ref指令
+- `import type { isRef } from 'vue'`可以判断是否为ref响应式对象
+- `import type { shallowRef } from 'vue'`只能做浅层响应，只到.value层级
+- `import type { triggerRef } from 'vue'`强制更新收集的依赖，ref底层会调用这个triggerRef
+- ❗ 注意：shallowRef和ref不能混用，因为ref更新时会强势更新shallowRef的视图（ref底层更新是会调用triggerRef，会强制更新收集的依赖）。
+- `import type { customRef } from 'vue'`可以创建一个自定义的 ref，并对其依赖项跟踪和更新触发进行显式控制。
+    ```vue
+    <template>
+      <div>{{obj}}</div>
+      <button @click="click">click</button>
+    </template>
+    
+    <script setup lang='ts'>
+      import { customRef } from 'vue'
+      function myRef<T>(value:T) {
+        return customRef((track,triger)=>{
+          let timer:any 
+          return {
+            get(){
+              track()// 收集依赖
+              return value
+            },
+            set(newVal){
+              clearTimeout(timer);
+              timer = setTimeout(()=>{
+                value = newVal;
+                clearTimeout(timer);
+                triger() // 触发依赖
+              },500)
+            },
+          }
+        })
       }
-    })
-  }
-  
-	let obj = myRef<String>("初始文本")
-  
-	let click = function () {
-  	obj.value = "customRef 更改了"
-	}
-</script>
+      
+        let obj = myRef<String>("初始文本")
+      
+        let click = function () {
+          obj.value = "customRef 更改了"
+        }
+    </script>
+    ```
 
-<style scoped>
-</style>
-```
-
-浏览器>>devtools>>启用自定义格式设置工具 可以解决 console打印ref、reactive 需要点两层的问题。
-
-ref也可以被用来获取dom元素,如下：
+ref的另一种用法：被用来获取dom元素，如下：
 ```vue
 <script setup lang="ts">
 import { ref,onMounted } from 'vue'
 
-const msg = ref('Hello World!')
-
-const strBox = ref<HTMLDivElement>() // 常量名和标签属性需保持一致
+const strBox = ref<HTMLDivElement>() // 常量名和标签ref属性值需一致
 
 onMounted(()=>{
   console.log(strBox.value?.innerText)
 })
-
 </script>
 
 <template>
-  <h1>{{ msg }}</h1>
-  <input v-model="msg">
   <div ref="strBox">JavaScript...</div>
 </template>
 ```
-ref源码位置： packages/reactivity/ref.ts 67 line，ref函数支持函数重载，支持多种函数参数，调用createRef()判断是否为ref对象，是就直接返回，否则通过RefImpl类创建一个ref对象，
-
-RefImpl类接受两个属性(value,isShallow),它的私有属性_value就是将被读取的值，_v_isShallow（）为false调用Toreactive(),判断是否为引用类型，是调用reactive(),不是直接返回值
-
-
-ref和shallowRef写一块会影响视图更新，因为triggerRef可以强制更新shallowRef的值，Ref和triggerRef底层都是调用triggerRefValue，triggerRefValue又会调用triggerEffects更新依赖，所以会一块将shallowRef的依赖也更新。
+⭐ ref源码讲解：[ref源码](https://www.bilibili.com/video/BV1dS4y1y7vd/?p=7&share_source=copy_web&vd_source=461186b903c28eeeb1342b31e0bfe68e&t=986)
 
 ## 第七章 Reactive
-ref和Reactive区别1：ref支持所有类型，reactive只支持引用类型（Arr、Object、Map、Set）
-ref和Reactive区别2：ref取值赋值都需要加.value，reactive可以直接读写值
 
-Reactive包裹的数据是通过proxy代理的对象，不能被直接赋值，只能使用方法增删改数据或者将数组添加到对象中被包装，再通过reactive响应处理
+ref和reactive都是用来创建响应式对象的，两者的区别在于：
+1. ref支持所有类型，reactive只支持引用类型（Arr、Object、Map、Set）
+2. ref取值赋值都需要以.value的形式  ，reactive可以直接读写值
 
-补充：`import { readonly } from "vue"`，readonly可以将reactive代理的对象变为只读，无法重新赋值，但是可被原始对象影响，原始对象更改也会readonly对象。
-补充：`import { shallowReactive } from "vue"`，shallowReactive也是响应式浅层的，只到第一层数据，也会被reactive影响，所以不能混用。
+❗ 注意：reactive 是通过proxy代理的对象，不能被直接赋值，arr类型一般使用方法进行增删改操作（方法1），或将数组作为对象属性包装一层（方法2）
 
-Reactive源码：reactive()函数中对参数做了泛型约束，只能传入引用类型的对象，会判断是否为只读，是则直接返回，
-否则就调用createReactiveObject()函数,判断参数类型（普通类型-直接返回、对象已经被代理过了-直接返回、缓存中找到-直接返回、白名单-直接返回），最后通过proxy代理
+补充：
+- `import { readonly } from "vue"`，readonly可以将reactive代理的对象变为只读，无法重新赋值，但是可被原始对象影响，原始对象更改也会readonly对象。
+- `import { shallowReactive } from "vue"`，shallowReactive也是响应式浅层的，只到第一层数据，也会被reactive影响，所以不能混用。
+
+❗ 注意：shallowReactive和reactive也是不能混用
+
+
+Reactive源码[reactive源码讲解](https://www.bilibili.com/video/BV1dS4y1y7vd/?p=8&share_source=copy_web&vd_source=461186b903c28eeeb1342b31e0bfe68e&t=817)
+
+## 第八章：ToRef、ToRefs、ToRaw
+
+ToRef应用场景：可以将对象的某个属性包装成为一个响应式对象提供给外部使用，而不用暴露整个对象。经常将toRef作为函数参数传递，并做到响应式对象视图更新
 ```vue
 <script setup lang='ts'>
 import { ref,reactive,toRef,toRefs,toRaw } from 'vue'
 const tom = {name:"tom",age:28}
-const tomName = toRef(tom,"name") 
+const tomName = toRef(tom,"age")
 // toRef 只能修改响应式对象的值，对非响应式视图毫无影响
 const changeTom = ()=>{
-  tomName.value = "jerry"
-  console.log(tom)
+  tomName.value = Math.floor(Math.random()*100)
 }
 
-const jerry = reactive({name:"jerry",age:28}) 
+const jerry = reactive({name:"jerry",age:28})
 const JerryAge = toRef(jerry,"age")
 // 可以做到响应式更新
 const changeJerry = (obj)=>{
   JerryAge.value = Math.floor(Math.random()*100)
-  console.log(jerry)
 }
-
-// 应用场景：toRef多作为函数参数传递，并做到响应式视图更新
 </script>
 
 <template>
-  <h1>{{ tom }}</h1>
+  <h1>{{ tom.name+"--"+tom.age }}</h1>
   <button @click="changeTom">change tom age</button>
   <hr>
-  <h1>{{ jerry }}</h1>
+  <h1>{{ jerry.name+"--"+jerry.age }}</h1>
   <button @click="changeJerry">change jerry age</button>
 </template>
 ```
-
-## 第八章：ToRef、ToRefs、ToRaw
-
-ToRef应用场景：可以将对象的某个属性包装成为一个响应式对象提供给外部使用，而不用暴露整个对象。
 理解：相当于解构，但是解构出来的对象是响应式的
-```vue
-<script setup>
-import { ref, reactive,toRef } from 'vue'
-const person = reactive({name:"tom",age:18})
-let age = toRef(person,"age")
-let changeName = ()=>{
-  age.value = Math.floor(18+Math.random()*82)
-}
-</script>
 
-<template>
-  <div>{{ person }}</div>
-  <button @click="changeName">
-    change name
-  </button>
-</template>
-```
-toRefs源码
+⭐ toRefs源码实现非常简单
 ```ts
 const toRefs =<T extends object>(object:T) => {
     const map:any = {}
@@ -543,13 +456,13 @@ const toRefs =<T extends object>(object:T) => {
     return map
 }
 ```
-toRefs适用于复杂对象外面包一层,然后再把对象结构出来：
+toRefs一般被用于复杂对象，常搭配对象解构，示例如下：
 ```vue
 <script setup>
 import { reactive,toRefs } from 'vue'
 const person = reactive({name:"tom",age:18})
 let {name,age} = toRefs(person)
-let changeName = ()=>{
+let change = ()=>{
   age.value = Math.floor(18+Math.random()*82)
   name.value = Math.random().toString(36).slice(2,)
 }
@@ -557,15 +470,15 @@ let changeName = ()=>{
 
 <template>
   <div>{{ person }}</div>
-  <button @click="changeName">
-    change name
-  </button>
+  <button @click="change">change</button>
 </template>
 ```
-toRaw应用场景：将一个对象脱离响应式包装，底层是通过 __v_raw 属性，此属性不会暴露给开发者。
-源码讲解[链接](https://www.bilibili.com/video/BV1dS4y1y7vd/?p=9&share_source=copy_web&vd_source=461186b903c28eeeb1342b31e0bfe68e&t=709)
 
-## 第八章番外：响应式原理 ⭐（以后补充）
+toRaw应用场景：将一个对象脱离响应式包装，底层是通过 __v_raw 属性，此属性并不会暴露给开发者使用。
+
+⭐ [toRaw源码讲解](https://www.bilibili.com/video/BV1dS4y1y7vd/?p=9&share_source=copy_web&vd_source=461186b903c28eeeb1342b31e0bfe68e&t=709)
+
+## ⭐ 第八章番外：响应式原理 （未完善）
 
 推荐阅读
 [Vue.js设计与实现-第二篇 Vue 响应系统]()、
@@ -597,239 +510,97 @@ data = new Proxy(data,{
 })
 ```
 
-### 实现 reactive
-```ts
-export const reactive = <T extends object>(object:T)=>{
-    return new Proxy(object,{
-        get(target: T, p: string | symbol, receiver: any): any {
-            // return target[key]
-            // 上面这种方式会出现问题，需要Reflect保证上下文的正确
-            return Reflect.get(target,p,receiver)
-        },
-        set(target: T, p: string | symbol, value: any, receiver: any): boolean {
-            // Reflect.set 会返回一个 boolean 值
-            return Reflect.set(target,p,value,receiver)
-        },
-        /*此外还有
-        * deleteProperty --- 删除
-        * ownKeys -- 遍历属性
-        * apply -- 拦截方法
-        * */
-    })
-}
-```
-### 实现 effect
-```js
-const user = reactive({name:"xxx",age:18})
-
-effect(()=>{
-    document.querySelector("#app").innerText = `${user.name}--${user.age}`
-})
-```
-```ts
-let activeEffect 
-export const effect = (fn:Function)=>{
-    // 闭包
-    const _effect = function (){
-        activeEffect = _effect
-        fn()
-    }
-    _effect()
-}
-
-// 依赖收集
-const targetMap = new weakMap()
-export const track = (target,key)=>{
-    let depsMap = targetMap.get(target)
-    if(!depsMap) {
-        depsMap = new Map()
-        targetMap.set(target,depsMap)
-    }
-}
-```
-
 ## 第九章 computed计算属性
 基本使用：
 ```vue
 <script setup>
 import { ref,computed } from 'vue'
-const firstName = ref("a")
-const lastName= ref("b")
-// 函数写法
-const name = computed(()=>{
-  return firstName.value+'----'+lastName.value
-})
+let firstName = ref("a")
+let lastName= ref("b")
+// 1. 函数写法
 
-// 对象写法
-const all = computed({
-  get(){
-    return `${firstName.value}---${ lastName.value}`
-	},
+
+// 2. 对象写法
+const name = computed({
+  get(){return `${firstName.value}---${ lastName.value}`},
   set(newVal){
-    return firstName.value+'----'+lastName.value
+    let [last,first] = newVal.split(" ")
+    lastName = ref(last)
+    firstName = ref(first)
   },
 })
 </script>
 
 <template>
   <div>{{ name }}</div>
-  <div>{{ all }}</div>
   <input v-model="firstName" />
   <input v-model="lastName" />
 </template>
 ```
-记账本案例:
+
+## 第十章 watch 侦听器
 ```vue
 <script setup lang="ts">
-import { ref,computed,reactive } from 'vue'
-let list = reactive([
-  {name:"烟",number:10,price:1},
-  {name:"酒",number:13,price:2},
-  {name:"糖",number:41,price:10},
-  {name:"茶",number:186,price:100},
-])
-
-const inorde = (item:object,type:Boolean)=>{
-  if(type) {
-    item.number++
-  }else {
-    item.number--
-  }
-}
-const remove = (index:number)=>{
-  list.splice(index,1)
-}
-let $price = computed(()=>{
-  return list.reduce((val,item)=>{return val+(item.price*item.number)},0)
-})
-
-</script>
-
-<template>
-  <table>
-    <tr>
-    	<td>商品</td>
-    	<td>小计</td>
-    	<td>数量</td>
-      <td>删除</td>
-    </tr>
-  	<tr v-for="(item,index) in list" :key="index">
-    	<td>{{item.name}}</td>
-    	<td>{{item.number*item.price}}</td>
-    	<td>
-        <button @click="inorde(item,false)">-</button>
-        {{item.number}}
-        <button @click="inorde(item,true)">+</button>
-      </td>
-      <td><button @click="remove(index)">删除</button></td>
-    </tr>
-     <tr>
-    	<td></td>
-    	<td></td>
-    	<td>总价:{{$price}}</td>
-    </tr>
-  </table>
-</template>
-```
-
-## 第十章 watch 侦听属性
-```vue
-<script setup lang="ts">
-import { ref,watch,reactive } from 'vue'
+import { ref,watch } from 'vue'
 
 let msg = ref("hello")
-let msg1 = ref("hello")
-// 为单个属性添加侦听器
+let msg1 = ref("world")
+// 1. 为单个属性添加侦听器
 watch(msg,(newVal,oldVal)=>{
   console.log(newVal,oldVal)
 })
-// 为多个属性添加侦听器（数组形式）
+// 2. 为多个属性添加侦听器（数组形式）
 watch([msg,msg1],(newVal,oldVal)=>{
   console.log(newVal,oldVal)
 })
 </script>
-
-<template>
-  <input type="text" v-model="msg"/>
-  {{msg}}
-  <hr />
-  <input type="text" v-model="msg1"/>
-  {{msg1}}
-</template>
 ```
-深度监视，需要注意newVal和oldVal是相同的，后面会解释（源码job之后，新旧值是直接=赋值）
+### 深度监视，
+vue3中需要注意newVal和oldVal是相同的，后面会解释（源码job之后，新旧值是直接赋值）
 ```vue
 <script setup lang="ts">
-import { ref,watch,reactive } from 'vue'
+import { ref,watch } from 'vue'
 let data = ref({
-  foo:{
-    name:"tom",
-    age:18
-  }
+  foo: { name:"tom", age:18 }
 })
 // 深度监视
 watch(data,(newVal,oldVal)=>{
   // newVal和oldVal 是相同的！！！
   console.log(newVal,oldVal)
 },{
-  // active 底层已经做了deep:true,可以不开启
+  // active 底层会默认开启
   deep:true,
   immediate:true,
-  flush:"pre",// pre 组件更新之前执行; async 同步执行; post 组件更新之后执行
+  flush:"pre",// watch回调执行时机：pre 组件更新之前执行; async 同步执行; post 组件更新之后执行
 })
 </script>
-
-<template>
-  <input v-model="data.foo.name"/>
-  <input v-model="data.foo.age"/>
-</template>
 ```
-监视对象属性
+### 监视对象的某个属性，而非监视整个对象
 ```vue
 <script setup lang="ts">
 import { watch,reactive } from 'vue'
 let data = reactive({
-  foo:{
-      name:"tom",
-      age:18
-  }
+  foo:{name:"tom", age:18}
 })
-// 监视单一属性官方推荐使用函数返回
-watch(()=>data.foo.name,(newVal,oldVal)=>{
-  // newVal和oldVal 是相同的！！！
-  console.log(newVal,oldVal)
-})
+// 监视单一属性 官方推荐使用函数返回
+watch(()=>data.foo.name,(newVal,oldVal)=>{console.log(newVal,oldVal)})
 </script>
-
-<template>
-  <input v-model="data.foo.name"/>
-  <input v-model="data.foo.age"/>
-</template>
 ```
-源码讲解[链接](https://www.bilibili.com/video/BV1dS4y1y7vd/?p=12&share_source=copy_web&vd_source=461186b903c28eeeb1342b31e0bfe68e&t=409)
 
-watch底层调用了doWatch(source,cb,option),doWatch会做以下几件事
-格式化 source，（ref、reactive、array、function），格式化后赋值给了getter函数
-ref-->取value赋值给getter
-reactive-->traverse（递归）
-函数就进行加工-->赋值给 getter，并判断有没有cb，有就执行watch，没有就执行watch effect
-如果cb和deep开启了，就进行traverse（递归）深度监听
-...
+⭐ 源码讲解[watch 源码](https://www.bilibili.com/video/BV1dS4y1y7vd/?p=12&share_source=copy_web&vd_source=461186b903c28eeeb1342b31e0bfe68e&t=409)
 
 ## 第十一章 watchEffect 高级侦听器
 ```vue
 <script setup lang="ts">
-import { ref,watch,reactive,watchEffect } from 'vue'
+import { ref,watchEffect } from 'vue'
 let data = ref({
-  foo:{
-      name:"tom",
-      age:18
-  }
+  foo:{name:"tom", age:18}
 })
 // watchEffect会返回一个停止函数
 const stop = watchEffect((oninvalidate)=>{
-  console.log("data---",data)
-  // oninvalidate 会在更新前被调用
+  // 需要监听的属性直接在回调函数中使用即可，会自动监听，而且是非惰性的，挂载完成后会自动调用
+  console.log("data ==>",data.value)
+  // oninvalidate 会在更新前被调用，无关oninvalidate函数位置
   oninvalidate(()=>{
     console.log("before")
   })
@@ -844,21 +615,21 @@ const stop = watchEffect((oninvalidate)=>{
 </script>
 
 <template>
-	<input v-model="data.foo.name"/>
+  <input v-model="data.foo.name"/>
   <input v-model="data.foo.age"/>
   <button @click="stop">停止监听</button>
 </template>
 ```
 
-nextTick是异步的，生命周期都是同步的，nextTick执行的时候生命周期早就执行过一遍了
-使用v-show并不会销毁组件，v-show是样式的隐藏，v-if 却是重新渲染
-
 ## 第十二章 生命周期
 ```vue
 <script setup lang="ts">
-	import { ref,onBeforeMount,onMounted,onBeforeUpdate,onUpdated,onBeforeUnmount,onUnmounted,onRenderTracked,onRenderTriggered} from 'vue'
+  import { 
+    ref,onBeforeMount,onMounted,onBeforeUpdate,onUpdated,
+    onBeforeUnmount,onUnmounted,onRenderTracked,onRenderTriggered
+  } from 'vue'
   
-  // 1. setup 语法糖模式中，beforeCreate created 被屏蔽了(setup替代了)
+  // 1. setup 语法糖模式中，beforeCreate created 被屏蔽了(直接在setup函数中可以替代)
   console.log("setup")
   
   // 2. 创建前
@@ -890,23 +661,20 @@ nextTick是异步的，生命周期都是同步的，nextTick执行的时候生�
   onRenderTracked((e)=>{})
   // 9. 触发依赖钩子
   onRenderTriggered((e)=>{})
+    
   const msg = ref("张三")
-  const change = ()=>{
-    msg.value = "李四篡位"
-  }
-  let currnt = true
+  const change = ()=>{msg.value = "李四篡位"}
 </script>
 <Comp/>	
 <template>
-	<div>
-    {{msg}}
-  </div>
-  <button @click="change">
-    change
-  </button>
+  <div>{{msg}}</div>
+  <button @click="change">change</button>
 </template>
 ```
-讲解声明周期[链接](https://www.bilibili.com/video/BV1dS4y1y7vd/?p=14&share_source=copy_web&vd_source=461186b903c28eeeb1342b31e0bfe68e&t=665)
+
+❗ 注意：nextTick是异步的，生命周期都是同步的，nextTick执行的时候生命周期早就执行过一遍了
+
+⭐ [生命周期源码](https://www.bilibili.com/video/BV1dS4y1y7vd/?p=14&share_source=copy_web&vd_source=461186b903c28eeeb1342b31e0bfe68e&t=665)
 
 ## 第十三章 实操组件和认识 less、scoped
 
@@ -1374,19 +1142,192 @@ _resolveDynamicComponent(component)首先会判断参数是否为string类型，
 resolveAsset函数会判断当前type（optionsAPI还是CompositionApi）去做区分--->通过resolve()进行注册,返回一个res（当前要切换的组件）
 
 ## 第十七章 插槽slot
+使用场景：组件可以被复用但是内部有少量的改动，使用插槽根据需求修改就行了
+### 匿名插槽和具名插槽
+index.vue
+```vue
+<template>
+<div class="content">
+  <MenuVue>
+    <template v-slot:left>←</template>
+    <template v-slot:right>→</template>
+    <template v-slot>匿名插槽被插入了</template>
+  </MenuVue>
+</div>
+</template>
+```
+menu.vue
+```vue
+<template>
+  <div class="container">
+    <header>
+      <!-- 具名插槽 -->
+      <span><slot name="left"></slot></span>
+      <span><slot name="right"></slot></span>
+    </header>
+    <main>
+      <!-- 匿名插槽 -->
+      <slot></slot>
+    </main>
+  </div>
+</template>
+```
+### 作用域插槽
+父组件中可以拿到子组件的值
+index.vue
+```vue
+<template>
+<div class="content">
+  <MenuVue>
+    <template v-slot="{slotData,index}">
+      作用域插槽{{slotData.name}}插到了第{{index}}位
+    </template>
+  </MenuVue>
+</div>
+</template>
+```
+menu.vue
+```vue
+<template>
+  <main>
+    <div v-for="(item,index) in slotData" :key="index">
+      <slot :index="index" :slotData="item"></slot>
+    </div>
+  </main>
+</template>
 
+<script setup lang="ts">
+const slotData = [
+  {name:"A",age:18},
+  {name:"B",age:19},
+  {name:"C",age:20},
+]
+</script>
+```
+语法糖1：可以使用#代替v-slot:，如`<template #left></template>
+语法糖2：可以使用#default代替v-slot，如`<template #default={data}></template>
+### 动态插槽
+动态决定插槽
+```vue
+<template>
+<div class="content">
+  <MenuVue>
+    <template #[slotName]>
+      我在哪儿
+    </template>
+  </MenuVue>
+</div>
+</template>
 
+<script steup lang="ts">
+import { ref } from "vue"
 
+let slotName = ref('left')
+</script>
+```
 
+## 第十八章 异步组件、代码分包和 suspense
+注意：suspense和telepot是一样的，都是Vue3新增的内置组件，但是需要注意的是 suspense 以后可能会有一些变化。
 
+### 异步组件
+应用场景可参考 elementUI 的骨架屏案例，这两者一般是配合使用的。
+```vue
+<template>
+<div class="content">
+  <Suspense>
+    <template #default>
+      <!--   加载完成之后的组件   -->
+      <syncVue></syncVue>
+    </template>
+    <template #fallback>
+      <!--   加载中的组件   -->
+      <skeletonVue></skeletonVue>
+    </template>
+  </Suspense>
+</div>
+</template>
 
+<script setup lang="ts">
+import {defineAsyncComponent} from "vue";
+import skeletonVue from "./components/skeleton.vue"
+// 第一种方式（函数方式，常用）
+const syncVue = defineAsyncComponent(()=> import("@/components/sync.vue"))
 
+// 第二种方式（对象形式）
+// const syncVue = defineAsyncComponent({
+//   loadingComponent:()=> import("@/components/sync.vue"),
+//   timeout:,
+//   errorComponent:
+// })
+</script>
+```
+性能优化之代码分包：凡是通过import函数模式引入的，在打包时都会被拆解，不会被打入主包。
 
+在普通模式下，npm run build 会打包到dist文件夹，assets>>index.xxx.js文件会将所有的东西放到其中，如果这个文件很大，首次加载时白屏时间会非常长。
 
+使用异步组件的方式，异步组件会被拆分出来，在需要时才会被加载。
 
+## 第十九章 传送组件
 
+Teleport 是vue3.0新增的内置组件，可将模板渲染到指定dom节点，不受父级style、v-show限制
+Teleport 组件有两个属性to（传送位置，css选择器）和disabled（是否为原位置，布尔值），
 
+Teleport源码：
+坐标：runtime-core>>src>>renderer.ts
+Teleport经过patch函数的创建--->判断每个类型创建对应节点、元素和组件
+如果是Teleport，调用process方法（创建、更新）
+process方法调用resolveTarget(n2.props,querySelector)
+resolveTarget函数读取props的to属性，通过querySelector读取元素并返回
 
+获取目标移动的dom节点--向目标元素挂载节点--挂载子节点（disable为true，原先位置挂载，false挂载到target位置）
 
+## 第二十章 keep-alive缓存组件
+keep-alive内置组件一般被优化用户体验，被包裹的组件会被缓存，常用属性如下：
+```vue
+<!--A、B组件会被缓存 -->
+<keep-alive include="['A','B']">
+    <A></A>
+    <B></B>
+    <C></C>
+</keep-alive>
 
+<!--A、B组件不会被缓存 -->
+<keep-alive exclude="['A','B']">
+    <A></A>
+    <B></B>
+    <C></C>
+</keep-alive>
 
+<!-- 指定缓存组件的最大数量（自动缓存活跃组件） -->
+<keep-alive :max="2">
+<A></A>
+<B></B>
+<C></C>
+</keep-alive>
+```
+使用keep-alive之后，会增加两个声明周期钩子：
+
+```vue
+<script setup>
+// mounted钩子只会走一次
+mounted(()=>{
+  console.log("初始化")
+})
+
+onActivated(()=>{
+  console.log("keep-alive初始化")
+})
+
+onDeactivated(()=>{
+  console.log("keep-alive卸载")
+})
+
+// onUnmounted钩子不会被调用，取而代之的是 onDeactivated钩子
+onUnmounted(()=>{
+  console.log("卸载")
+})
+</script>
+```
+源码讲解:[坐标](https://www.bilibili.com/video/BV1dS4y1y7vd/?p=22&share_source=copy_web&vd_source=461186b903c28eeeb1342b31e0bfe68e&t=479)
+
+## 第二十一章
