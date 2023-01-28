@@ -295,6 +295,8 @@ Vue3 AST在线解析:[Vue 3 Template Explorer](https://template-explorer.vuejs.o
 ⭐ diff算法源码讲解：[diff算法](https://www.bilibili.com/video/BV1dS4y1y7vd/?p=6&share_source=copy_web&vd_source=461186b903c28eeeb1342b31e0bfe68e&t=216)
 
 ## 第六章 Ref
+[响应式 API：核心](https://cn.vuejs.org/api/reactivity-core.html)
+
 Vue2中通过data函数返回对象实现响应式数据，在Vue3中，只有被 ref 或者 reactive 系列包裹的值才可以做到响应式。
 ```vue
 <template>
@@ -678,74 +680,86 @@ const stop = watchEffect((oninvalidate)=>{
 
 ## 第十三章 实操组件和认识 less、scoped
 
-文件结构：
+[Vue.js - SFC 语法定义](https://cn.vuejs.org/api/sfc-spec.html)
+   
+实现经典两栏后台管理系统基本布局,文件结构如下：
+```
 Layout
-Content -- index.vue
-Header -- index.vue
-Menu -- index.vue
-index.vue
-实现经典两栏后台管理系统框架，文件结构如上
+|
+|- Content -- index.vue
+|
+|- Header -- index.vue
+|
+|- Menu -- index.vue
+|
+|_ index.vue
+```
+### 预处理器-less
+在vue中使用 lang 这个 attribute 来声明预处理器语言，下面演示[less](https://less.bootcss.com/)
 
-[less 官网](https://less.bootcss.com/)
-注意：使用vite构建的项目，不需要安装 less-loader，
-最常用的语法:
+❗ 注意：使用vite构建的项目，不需要安装 less-loader，
+
+less 预处理器基本语法:
 ```html
 <div class="content">
     <div class="content-item"></div>
 </div>
 ```
 ```less
+@primary-color: #333;
 .content {
   display: flex;
   flex-direction: column;
   &-item {
     width: 100%;
     height: 100%;
+    border-bottom:1px solid @primary-color
   }
 }
 ```
 
-scoped 可以实现样式隔离，底层会给元素添加data-v-xxx的属性，此属性不会重复,css样式会添加属性选择器，保证样式的唯一。
+⭐ scoped 属性可以实现样式隔离，底层会给元素添加data-v-xxx的唯一属性，底层使用PostCSS实现。
+
+[vue.js-组件作用域 CSS](https://cn.vuejs.org/api/sfc-css-features.html#scoped-css)、
+[scoped 原理](https://juejin.cn/post/7098569051860893709)
 
 ## 第十四章 父子组件传参
 ### 父传子（defineProps）
 index.vue 父组件传递参数
 ```vue
 <template>
-    <Menu :menuList="menuData"></Menu>
+    <Menu :data="menuData"></Menu>
 </template>
 
 <script setup lang="ts">
 import Menu from  "./Menu/index.vue"
 
 const menuData = [
-  {name:"统计概况",code:Math.random().toString(36).slice(2,)},
-  {name:"标准库",code:Math.random().toString(36).slice(2,)},
-  {name:"我的项目",code:Math.random().toString(36).slice(2,)},
-  {name:"系统环境",code:Math.random().toString(36).slice(2,)},
+  {name:"A",code:Math.random().toString(36).slice(2,)},
+  {name:"B",code:Math.random().toString(36).slice(2,)},
+  {name:"C",code:Math.random().toString(36).slice(2,)},
 ]
 </script>
 ```
+
 Menu 子组件接收参数（js形式）
 ```vue
 <template>
   <ul>
-    <li v-for="item in menuList" :key="item.code">
-      {{item.name}}
-    </li>
+    <li v-for="item in data" :key="item.code">{{item.name}}</li>
   </ul>
 </template>
 
 <script setup lang="ts">
 const props = defineProps({
-  menuList:{
+  data:{
     type:Array,
-    default:[{name:"关于我",value:"1"}]
+    default:[{name:"默认内容",code:"xxxx"}]
   }
 })
 
 // 模板语法中可以直接使用，js中使用需要接收defineProps返回值.的形式
-console.log(props.menuList)
+console.log(props.data)
 </script>
 ```
 Menu 子组件接收参数（ts泛型字面量模式更加简单）
@@ -754,7 +768,7 @@ Menu 子组件接收参数（ts泛型字面量模式更加简单）
   <div class="menu">
     <div class="log">XXX log</div>
     <ul>
-      <li v-for="item in menuList" :key="item.code">
+      <li v-for="item in data" :key="item.code">
         {{item.name}}
       </li>
     </ul>
@@ -763,16 +777,15 @@ Menu 子组件接收参数（ts泛型字面量模式更加简单）
 
 <script setup lang="ts">
 // ts形式（无默认值）
-// let props = defineProps<{menuList:object[]}>()
-// console.log(props.menuList)
+// let props = defineProps<{data:object[]}>()
+// console.log(props.data)
 
-// ts形式（有默认值）,需要使用ts特有的withDefaults设置默认值
-let props = withDefaults( defineProps<{title: string,menuList:object[]}>(),{
-  title:"xxx Log",
+// ts形式（有默认值）,需要使用ts特有的 withDefaults 设置默认值
+let props = withDefaults( defineProps<{data:object[]}>(),{
   // 对于复杂类型默认值推荐使用函数返回值
-  menuList:()=>[{name:"默认",code:Math.random().toString(36).slice(2,)}]
+  data:()=>[{name:"默认",code:Math.random().toString(36).slice(2,)}]
 })
-console.log(props.title)
+console.log(props.data[0])
 </script>
 ```
 
@@ -781,11 +794,8 @@ Menu 子组件传递参数（js形式）
 ```vue
 <template>
 <div class="menu">
-  <div class="log">
-    {{title}}
-  </div>
   <ul>
-    <li v-for="item in menuList" :key="item.code" @click="send(item.code)">
+    <li v-for="item in data" :key="item.code" @click="send(item.code)">
       {{item.name}}
     </li>
   </ul>
@@ -794,16 +804,15 @@ Menu 子组件传递参数（js形式）
 
 <script setup lang="ts">
 // 接收父组件参数
-let props = withDefaults( defineProps<{title: string,menuList:object[]}>(),{
-  title:"xxx Log",
-  menuList:()=>[{name:"默认",code:Math.random().toString(36).slice(2,)}]
+let props = withDefaults( defineProps<{data:object[]}>(),{
+  data:()=>[{name:"默认",code:Math.random().toString(36).slice(2,)}]
 })
 
 const emits = defineEmits(['on-click'])
 // 子组件传值给父组件
 const send = (code:string)=>{
-  // 这里参数可以传多个，第一个不能省略
-  emits("on-click",code,"menu")
+  // 这里参数可以传多个，但第一个不能省略
+  emits("on-click",code,"this is Child Component.")
 }
 </script>
 ```
@@ -811,11 +820,7 @@ const send = (code:string)=>{
 ```vue
 <template>
   <div class="layout">
-    <Menu :menuList="menuData" @on-click="getCode"></Menu>
-    <div class="layout-right">
-      <Header ></Header>
-      <Content></Content>
-    </div>
+    <Menu :data="menuData" @on-click="getCode"></Menu>
   </div>
 </template>
 
@@ -823,10 +828,8 @@ const send = (code:string)=>{
 import Menu from  "./Menu/index.vue"
 
 const menuData = [
-  {name:"统计概况",code:Math.random().toString(36).slice(2,)},
-  {name:"标准库",code:Math.random().toString(36).slice(2,)},
-  {name:"我的项目",code:Math.random().toString(36).slice(2,)},
-  {name:"系统环境",code:Math.random().toString(36).slice(2,)},
+  {name:"A",code:Math.random().toString(36).slice(2,)},
+  {name:"B",code:Math.random().toString(36).slice(2,)},
 ]
 
 // 接收子组件参数
@@ -835,15 +838,13 @@ const getCode = (...data:any)=>{
 }
 </script>
 ```
+
 Menu 子组件传递参数（ts形式）
 ```vue
 <template>
 <div class="menu">
-  <div class="log">
-    {{title}}
-  </div>
   <ul>
-    <li v-for="item in menuList" :key="item.code" @click="send(item.code)">
+    <li v-for="item in data" :key="item.code" @click="send(item.code)">
       {{item.name}}
     </li>
   </ul>
@@ -851,11 +852,8 @@ Menu 子组件传递参数（ts形式）
 </template>
 
 <script setup lang="ts">
-
-// 接收父组件参数
-let props = withDefaults( defineProps<{title: string,menuList:object[]}>(),{
-  title:"xxx Log",
-  menuList:()=>[{name:"默认",code:Math.random().toString(36).slice(2,)}]
+let props = withDefaults( defineProps<{data:object[]}>(),{
+  data:()=>[{name:"默认",code:Math.random().toString(36).slice(2,)}]
 })
 
 // 子组件传值给父组件（ts形式）
@@ -869,7 +867,9 @@ let send = (code:string)=>{
 </script>
 ```
 
-### defineExpose 暴露子组件属性或方法
+### defineExpose 暴露子组件属性或方法给父组件
+应用场景: [element 的from组件](https://element-plus.org/zh-CN/component/form.html#%E8%A1%A8%E5%8D%95%E6%A0%A1%E9%AA%8C)用到了defineExpose传递参数
+
 子组件暴露属性/方法
 ```vue
 <script setup lang="ts">
@@ -883,18 +883,13 @@ defineExpose({
 父组件接收属性并调用方法
 ```vue
 <template>
-  <div class="layout">
-    <Menu ref="menuCom" :menuList="menuData" @on-click="getCode"></Menu>
-  </div>
+  <Menu ref="menuCom"></Menu>
 </template>
 
 <script setup lang="ts">
 import { ref,onMounted } from 'vue'
 import Menu from  "./Menu/index.vue"
-
-const menuTitle = "xxx LOG"
-
-// 接收子组件暴露的属性和方法
+// 接收子组件暴露的属性和方法，此处常量名和组件ref属性值需要保持一致
 const menuCom = ref<InstanceType<typeof Menu>>()
 
 onMounted(()=>{
@@ -905,26 +900,16 @@ onMounted(()=>{
 })
 </script>
 ```
-应用场景:element 的from组件用到了defineExpose传递参数
 
-案例 [封装一个瀑布流插件]()
+案例 [封装一个瀑布流插件案例讲解](https://www.bilibili.com/video/BV1dS4y1y7vd/?p=16&share_source=copy_web&vd_source=461186b903c28eeeb1342b31e0bfe68e&t=703)
+
 js实现思路：利用绝对定位，计算每张图片的top、left，先放置第一列数据，并将第一列的高度为维护一个数组，循环在最低高度添加下一张图片。
 
 ## 第十五章 全局组件、递归组件和局部组件
-在Vue3中组件是开箱即用的，不需要项vue2一样注册，import引入即可使用。
-```vue
-<template>
-<div class="content">
-  <Card></Card>
-</div>
-</template>
+在Vue3 setup模式中组件引入是开箱即用的，不再需要注册，import引入即可在template被使用。
 
-<script setup lang="ts">
-import Card from "../../components/expame/Card.vue"
-</script>
-```
 ### 全局组件
-全局组件需要在main.js文件中注册，才能在此项目所有组件中使用：
+全局组件需要在main.js中注册，才能在此项目下所有组件中使用：
 ```js
 import { createApp } from 'vue'
 import './style.css'
@@ -936,13 +921,39 @@ import Card from './components/expame/Card.vue'
 createApp(App).component('Card',Card).mount('#app')
 ```
 批量注册全局组件可以借鉴[element的循环注册](https://element-plus.org/zh-CN/component/icon.html#%E6%B3%A8%E5%86%8C%E6%89%80%E6%9C%89%E5%9B%BE%E6%A0%87)的方式
+
 ### 递归组件
-见如下，直接使用组件名递归（方式1）
+父组件:
+```vue
+<template>
+  <TreeVue :data="data"></TreeVue>
+</template>
+
+<script setup lang="ts">
+import TreeVue from "./components/Tree.vue"
+
+const data = [
+  {
+    name:"A", 
+    checked:false,
+  },
+  {
+    name:"B", 
+    checked:true, 
+    children:[
+      {name:"B-1", checked:false,child:[{name:"B-1-1", checked:true}]},
+      {name:"B-2", checked:false,child:[{name:"B-2-1", checked:true}]}
+    ]
+  }
+]
+</script>
+```
+见如下，直接使用当前组件名递归（方式1）
 ```vue
 <template>
 <div v-for="item in data" class="tree">
-  <input type="checkbox" :checked="item.checked"> <span>{{item.name}}</span>
-  <!-- 直接使用组件名当递归组件的名称 -->
+  <input type="checkbox" :checked="item.checked"><span>{{item.name}}</span>
+  <!-- 组件内直接使用当前组件名作为递归组件 -->
   <Tree v-if="item?.children?.length" :data="item?.children"></Tree>
 </div>
 </template>
@@ -958,12 +969,6 @@ defineProps<{
   data:Tree[]
 }>()
 </script>
-
-<style scoped>
-.tree {
-  margin-left: 10px;
-}
-</style>
 ```
 使用script标签递归（方式2）
 ```vue
@@ -987,27 +992,22 @@ defineProps<{
 }>()
 </script>
 
-<!-- vue支持再写一个script标签在递归组件中重命名当前组件 -->
+<!-- vue支持再写一个script标签在递归组件中重命名并导出当前组件 -->
 <script lang="ts">
-export default  {
+export default {
   name: "MyTreeVue"
 }
 </script>
-
-<style scoped>
-.tree {
-  margin-left: 10px;
-}
-</style>
 ```
 使用第三方依赖（方式3）
 [unplugin-vue-define-options](https://www.npmjs.com/package/unplugin-vue-define-options)
 
-递归组件添加事件,注意阻止事件冒泡和使用$event传递事件源
+递归组件添加事件，❗ 注意阻止事件冒泡和使用$event传递事件源
 ```vue
 <template>
 <div v-for="item in data" class="tree">
-  <input type="checkbox" :checked="item.checked" @click.stop="clickTap(item,$event)"> <span>{{item.name}}</span>
+  <input type="checkbox" :checked="item.checked" @click.stop="clickTap(item,$event)"> 
+  <span>{{item.name}}</span>
   <Tree v-if="item?.children?.length" :data="item?.children"></Tree>
 </div>
 </template>
@@ -1018,21 +1018,23 @@ const clickTap = (item:Tree,e:HTMLInputElement)=>{
   console.log(item,e)
 }
 </script>
-
-<style scoped>
-.tree {
-  margin-left: 10px;
-}
-</style>
 ```
 
 ## 第十六章 动态组件
+[vue.js-动态组件](https://cn.vuejs.org/guide/essentials/component-basics.html#dynamic-components)
+
 多个组件使用同一个挂载点，并做到动态切换,下面是一个简单天气组件table切换的案例
 ```vue
 <template>
   <div class="weather">
     <header>
-      <div @click="switchCom(item,index)" :class="[active==index?'active':'']" v-for="(item,index) in data" :key="index">{{item.name}}</div>
+      <div @click="switchCom(item,index)" 
+           :class="[active==index?'active':'']" 
+           v-for="(item,index) in data" 
+           :key="index"
+      >
+        {{item.name}}
+      </div>
     </header>
     <section>
        <component :is="comId"></component>
@@ -1044,7 +1046,6 @@ const clickTap = (item:Tree,e:HTMLInputElement)=>{
 import { ref,reactive } from "vue"
 import TodayVue from "./Today.vue"
 import TomorrowVue from "./Tomorrow.vue"
-
 
 let comId = ref(TodayVue)
 let active = ref(0)
@@ -1059,7 +1060,7 @@ const data = reactive([
   },
 ])
 
-let switchCom = (item:any,index:number)=>{
+let switchCom = (item:object,index:number)=>{
   comId.value = item.com
   active.value = index
 }
@@ -1093,7 +1094,7 @@ let switchCom = (item:any,index:number)=>{
 }
 </style>
 ```
-注意，如果按照上面的做了依然会出现警告，这是因为ref对组件内部也做了proxy代理，这是不必要的，带来了性能浪费。
+❗ 注意：如果按照上面的做了依然会出现警告，这是因为ref对组件内部也做了proxy代理，这是不必要的，且带来了性能浪费。
 因此需要shallowRef（代理外面一层）或markRaw（添加__skip__属性，reactive碰到此属性会跳过proxy代理）
 ```js
 import { shallowRef,markRaw } from 'vue'
@@ -1128,20 +1129,14 @@ const data = reactive([
 ])
 
 // 类似于Vue2 需要注册
-components:{
-    AVue, BVue
-}
+components:{AVue, BVue}
 ```
 
-源码解析：
+源码解析：[动态组件源码解析](https://www.bilibili.com/video/BV1dS4y1y7vd/?p=18&share_source=copy_web&vd_source=461186b903c28eeeb1342b31e0bfe68e&t=635)
 
-component底层会调用_resolveDynamicComponent(component)函数进行动态切换。
+补充：动态组件缓存请参考第二十章 keep-alive 缓存组件或者[vue.js-keep-alive](https://cn.vuejs.org/guide/built-ins/keep-alive.html)
 
-_resolveDynamicComponent(component)首先会判断参数是否为string类型，是则调用 resolveAsset，对象类型则直接返回（性能更高）
-
-resolveAsset函数会判断当前type（optionsAPI还是CompositionApi）去做区分--->通过resolve()进行注册,返回一个res（当前要切换的组件）
-
-## 第十七章 插槽slot
+## 第十七章 插槽 slot
 使用场景：组件可以被复用但是内部有少量的改动，使用插槽根据需求修改就行了
 ### 匿名插槽和具名插槽
 index.vue
