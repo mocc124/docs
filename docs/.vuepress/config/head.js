@@ -1,9 +1,9 @@
-export default  [
+module.exports =  [
     ['link', { rel: 'icon', href: '/favicon.ico' }],
     ['meta', { name: 'author',content: 'junnian' }],
     ['meta', {
         name: 'keywords',
-        content: 'VuePress,博客,个人,前端,CSS,JavaSscript,HTML,Vue,TypeScript,ES6'
+        content: '博客,前端,CSS,JavaScript,HTML,Vue,TypeScript,ES6,VuePress,'
     }],
     ['link', { rel: 'manifast', href: '/manifast.json' }],
     ['meta', { name: 'theme-color', content: '#3eaf7c' }],

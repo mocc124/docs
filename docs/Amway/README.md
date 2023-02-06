@@ -36,6 +36,7 @@
 
 ## 4. JS/TS/Node
 
+- [你不知道的JavaScript](https://www.javascriptc.com/books/you-dont-know-js/)
 - [现代 JavaScript 教程](https://zh.javascript.info/)
 - [TS 中文手册](https://typescript.bootcss.com/)
 - [Node.js 学习指南](https://blog.poetries.top/node-learning-notes/)

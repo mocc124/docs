@@ -1,2 +1,4 @@
 # docs
-基于 VuePress+MarkDown 搭建的博客
+个人博客项目
+
+技术栈：Vue、Vuex、Vuepress等

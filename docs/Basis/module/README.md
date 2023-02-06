@@ -1,4 +1,4 @@
-# JS module
+# ES module
 
 学习 js module 推荐前往[javaScript module](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Guide/Modules)
 
