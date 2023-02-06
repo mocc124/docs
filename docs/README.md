@@ -1,7 +1,7 @@
 ---
 home: true
 heroImage: "/assets/img/smoke.png"
-heroText: junnian Blog
+heroText: union Blog
 tagline: 需要的不外乎是“路程”，也许能一步到位。（使用一言 api实现）
 # actionText: 前往了解 →
 actionLink: /zh/guide/

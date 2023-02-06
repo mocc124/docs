@@ -17,7 +17,7 @@ Axios 是一个基于 promise 网络请求库，作用于node.js 和浏览器中
 
 ### get 请求
 ```js
-const axios = require('axios');
+const axios = require('Axios');
 
 // 向给定ID的用户发起请求
 axios.get('/user?ID=12345')
@@ -110,13 +110,13 @@ get请求还有一种极其简单方式：`axios('/docs/user')`即可发送一�
 
 axios.defaults（全局axios默认值） 的使用：
 ```js
-import {axios} from 'axios';
+import {axios} from 'Axios';
 
 axios.defaults.timeout = 2000;
 axios.defaults.headers = {token: 'fsdf778s6g8767xcb'};
 axios.defaults.baseURL= 'http://localhost:5000';
 
-axios.get('/public/data',{ // 配置了 axios.defaults，这里的url和config就可以省略一部分内容更加精简
+axios.get('/public/data',{ // 配置了 Axios.defaults，这里的url和config就可以省略一部分内容更加精简
     params:{
         current:1,
         size:10
@@ -125,7 +125,7 @@ axios.get('/public/data',{ // 配置了 axios.defaults，这里的url和config�
 ```
 axios.create（自定义实例默认值） 的使用：
 ```js
-import {axios} from 'axios';
+import {axios} from 'Axios';
 
 const GithubAxios= axios.create({
     baseURL: 'https://api.GitHub.com/',
@@ -153,9 +153,9 @@ getCounts('username').then(
 
 axios.defaults 和 Axios.create的优先级问题？
 ```js
-import axios from "axios"
+import axios from "Axios"
 
-// 设置全局 axios 超时默认值为2000
+// 设置全局 Axios 超时默认值为2000
 axios.defaults.timeout = 2000;
 
 const instance = axios.create();
@@ -192,7 +192,7 @@ MyAxios.get('api/users',{
 自定义响应拦截和请求拦截
 ```vue
 <script>
-import axios from "axios"
+import axios from "Axios"
 
 export default {
   data(){
@@ -305,7 +305,7 @@ fetch API 方式（AbortController）和 cancel token API（CancelToken），推
 - 在任意请求完成后，需要在缓存列表中删除该次请求，以便可以重新发送该请求
 
 ```js
-import axios from "axios";
+import axios from "Axios";
 
 // 正在进行中的请求列表
 let reqList = []
@@ -359,7 +359,7 @@ service.interceptors.response.use(
     },
     error => {
         console.log(reqList)
-        if (axios.isCancel(error)) { // axios.isCancel(error)判断是不是取消请求导致的请求失败
+        if (axios.isCancel(error)) { // Axios.isCancel(error)判断是不是取消请求导致的请求失败
             console.log("请求取消: ", error.message);
         } else {
             // 增加延迟，相同请求不得在短时间内重复发送

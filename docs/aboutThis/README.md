@@ -50,7 +50,7 @@ The key's randomart image is:
 
 ```bash
 Mrnianj@DESKTOP-9F9F6NH MINGW64 /d/博客
-$ git clone git@github.com:mocc124/docs.git
+$ Git clone Git@github.com:mocc124/docs.Git
 Cloning into 'docs'...
 The authenticity of host 'github.com (127.0.0.1)' can't be established.
 ED25519 key fingerprint is SHA256:+SvZiMJhD3wvvCOszPA0UvHdDkr4V6TF/bzLiYuJpqU.

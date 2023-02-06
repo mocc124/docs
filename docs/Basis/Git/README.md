@@ -36,12 +36,12 @@ PowerShell 最基本的几个命令你需要知道：
 如果是首次使用 git 命令，需要设置用户名称与邮件地址，因为每一个 Git 的提交都会使用这些信息，并且它会写入到每一次提交中:
 
 ```shell
-git config --global @user.name "username"
-git config --global @user.email "useremail@xxx.com"
+Git config --global @user.name "username"
+Git config --global @user.email "useremail@xxx.com"
 
 # 检查
-git config user.name
-git config user.email
+Git config user.name
+Git config user.email
 ```
 
 使用命令`git init`初始化项目，成功会在当前目录生成 [.git 目录](https://zhuanlan.zhihu.com/p/106243588)，这个其实就是 Git 的版本库，.git 中有 stage（或者叫 index）的暂存区，还有 Git 为我们自动创建的第一个分支 master，以及指向 master 的一个指针叫 HEAD。
@@ -76,17 +76,13 @@ git config user.email
 思考：请思考下面的情况以及解决方案:
 
 ```shell
-# content(README.md): first commit content
-git add README.md
-git commit -m "first commit"
+Git add A.js
 
-# content(README.md): first commit content; rencurrence commit content;
-git add README.md
+Git commit -m "first commit"
 
-# content(README.md):
-# first commit content; rencurrence commit content; again commit content;
+Git add B.js
 
-git status # ???
+Git status # ???
 ```
 
 - `git diff` 比较当前文件和暂存区文件差异
@@ -204,8 +200,8 @@ Github 已经在 2021 年开始需要生成个人 token 来 push 了，需要去
    - 获取 dev 分支最新代码
      ```shell
      # 获取 dev 分支最新代码
-     git checkout dev
-     git pull
+     Git checkout dev
+     Git pull
      ```
    - 新建一个特性分支`git branch feature/xxx`
    - 切换到该特性分支开发`git checkout feature/xxx`
@@ -213,11 +209,11 @@ Github 已经在 2021 年开始需要生成个人 token 来 push 了，需要去
 3. 提交分支
 
    ```shell
-   git add .
-   git commit -m "message"
-   # git commit -a -m ""   直接提交到本地版本库
-   # git commit -am ""     直接提交到本地版本库 -a和-m可以简写
-   git push -u origin feature/xxx`/`git push
+   Git add .
+   Git commit -m "message"
+   # Git commit -a -m ""   直接提交到本地版本库
+   # Git commit -am ""     直接提交到本地版本库 -a和-m可以简写
+   Git push -u origin feature/xxx`/`Git push
    ```
 
 4. 与 dev 主干同步
@@ -226,12 +222,12 @@ Github 已经在 2021 年开始需要生成个人 token 来 push 了，需要去
 
    ```shell
    # 获取 dev 分支最新代码
-   git checkout dev
-   git pull
+   Git checkout dev
+   Git pull
    # 切换回当前开发的特性分支
-   git checkout feature/xxx
+   Git checkout feature/xxx
    # 合并 dev 分支到当前分支
-   git merge dev
+   Git merge dev
    ```
 
 5. 发出 Pull Request
@@ -243,8 +239,8 @@ Github 已经在 2021 年开始需要生成个人 token 来 push 了，需要去
    # 最后进行一次步骤三的同步工作
 
    # 提交到远程仓库
-   git checkout feature/xxx
-   git push origin feature/xxx
+   Git checkout feature/xxx
+   Git push origin feature/xxx
 
    # 在 GitHub/Gitee 管理界面创建 Pull Request，等待管理员进行 Code Review
    ```
@@ -253,13 +249,13 @@ Github 已经在 2021 年开始需要生成个人 token 来 push 了，需要去
 
    ```shell
    # 首先，切换回 dev 分支
-   git checkout dev
+   Git checkout dev
 
    # 先删除远程特性分支
-   git push origin -d feature/xxx
+   Git push origin -d feature/xxx
 
    # 再删除本地特性分支
-   git branch -d feature/xxx
+   Git branch -d feature/xxx
    ```
 
 ## 四、解决冲突
